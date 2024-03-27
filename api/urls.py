@@ -1,0 +1,16 @@
+from django.urls import path
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+
+from api.views import rbac_views, user_views, upload_view
+
+urlpatterns = [
+    path('login', rbac_views.LoginView.as_view()),
+    path('login', rbac_views.LogoutView.as_view()),
+    # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('user', user_views.UserView.as_view()),
+    path('extract', upload_view.UploadView.as_view())
+]
