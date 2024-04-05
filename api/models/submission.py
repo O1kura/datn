@@ -25,7 +25,7 @@ class File(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     name = models.CharField(max_length=127)
     extension = models.CharField(max_length=127, null=True, blank=True)
-    image = models.ImageField()
+    image = models.ImageField(upload_to='origin')
     size = models.IntegerField(null=True, blank=True)
     submission = models.ForeignKey('Submission', on_delete=models.DO_NOTHING, related_name='file_set')
 
@@ -95,13 +95,27 @@ class Data(models.Model):
     last_ocr_value = models.TextField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
     normalized_value = models.TextField(null=True, blank=True)
-    # confidence_score = models.FloatField(null=True, blank=True)
-    # status = models.CharField(max_length=27, default=DataStatus.ready_to_validate.value, choices=DataStatus.choices())
-    category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
     box = models.JSONField(null=True, blank=True)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='data_set')
-    # page = models.ForeignKey(Page, on_delete=models.CASCADE)
-    # service_label = models.ForeignKey(ServiceLabel, on_delete=models.CASCADE)
-    # parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    # classified = models.CharField(max_length=27, choices=ExpenseCategory.choices(), null=True, blank=True)
-    # classified_detail = models.CharField(max_length=27, choices=ClassifyChoice.choices(), null=True, blank=True)
+
+
+class Question(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
+    box = models.JSONField(null=True, blank=True)
+    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='question_set')
+    image = models.ImageField(upload_to='question')
+
+
+class QuestionData(models.Model):
+    id = models.AutoField(primary_key=True)
+    created_at = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
+    updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    value = models.TextField(null=True, blank=True)
+    category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
+    data = models.ForeignKey(Data, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_data_set')
