@@ -13,4 +13,5 @@ class ImageSerializer(serializers.ModelSerializer):
 class ListSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
+        fields='__all__'
         # exclude = ['init_data']

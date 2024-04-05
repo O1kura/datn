@@ -15,7 +15,7 @@ class ListSubmissionView(ListCreateAPIView):
     #
     def get_queryset(self):
         # return list_submissions(self)
-        return Submission.objects.all()
+        return Submission.objects.filter(user=self.request.user)
 
     def post(self, request):
         success_ids, error_file_names = upload_files(request)

@@ -6,3 +6,4 @@ mysql_pass = '1234'
 mysql_host = '127.0.0.1'
 # mysql_host = '18.140.181.109'
 mysql_port = '3306'
+tesseract_OCR = r"C:\Program Files\Tesseract-OCR\tesseract.exe"

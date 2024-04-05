@@ -2,6 +2,8 @@ import os
 from enum import Enum
 from pathlib import Path
 
+from django.contrib.auth.models import User
+
 from datn import settings
 from django.db import models
 from django.dispatch import receiver
@@ -13,6 +15,7 @@ class Submission(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False, db_index=True)
     last_ocr_time = models.DateTimeField(auto_now_add=True, editable=False, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    user = models.ForeignKey(User , default=None, on_delete=models.CASCADE, related_name='submission_set')
 
     class Meta:
         db_table = 'submission'
@@ -25,7 +28,7 @@ class File(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     name = models.CharField(max_length=127)
     extension = models.CharField(max_length=127, null=True, blank=True)
-    image = models.ImageField(upload_to='origin')
+    path = models.CharField(max_length=512)
     size = models.IntegerField(null=True, blank=True)
     submission = models.ForeignKey('Submission', on_delete=models.DO_NOTHING, related_name='file_set')
 

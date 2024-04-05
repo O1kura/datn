@@ -6,10 +6,13 @@ from pathlib import Path
 import cv2
 import pytesseract
 import numpy as np
+
+from config import tesseract_OCR
+
 # Step 1: Load the image
 
 # Thiết lập đường dẫn của Tesseract OCR engine (đặt đúng đường dẫn của bạn)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+pytesseract.pytesseract.tesseract_cmd = tesseract_OCR
 # Đường dẫn đến ảnh bạn muốn xử lý
 
 
@@ -51,6 +54,7 @@ def text_line_extraction(image):
 
     # Sort contours based on y-coordinate
     sorted_contours = sorted(filtered_contours, key=lambda contour: cv2.boundingRect(contour)[1])
+    # sorted_contours = sorted(contours, key=lambda contour: cv2.boundingRect(contour)[1])
     # print(len(sorted_contours))
     # Step 4: Recognize text lines
     uppercase_letters = list(string.ascii_uppercase)

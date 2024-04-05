@@ -14,4 +14,5 @@ urlpatterns = [
     path('user', user_views.UserView.as_view()),
     path('extract', upload_view.UnauthorizedUploadView.as_view()),
     path('submissions', submission_views.ListSubmissionView.as_view()),
+    path('register', rbac_views.RegisterView.as_view())
 ]

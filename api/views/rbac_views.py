@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -6,6 +8,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from api.middlewares.custome_middleware import CustomException
+from api.serializers.user_serializer import UserSerializer
 from api.utils.utils import get_tokens_for_user
 
 
@@ -45,3 +48,21 @@ class LogoutView(GenericAPIView):
         token = request.auth
         token.blacklist()
         return Response({'status': 'OK'})
+
+
+class RegisterView(GenericAPIView):
+    authentication_classes = ()
+
+    def post(self, request):
+        data = json.loads(request.body)
+        email = data.get('email', None)
+        username = data.get('username', None)
+        password = data.get('password', None)
+        if email is None:
+            raise CustomException('missing_fields', 'Missing email field')
+        if User.objects.filter(email=email).first():
+            raise CustomException('email_existed', 'Email already exists')
+        user = User.objects.create_user(username=username, password=password, email=email)
+        user_serializer = UserSerializer(instance=user)
+
+        return Response(user_serializer.data)

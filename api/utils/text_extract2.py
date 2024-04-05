@@ -87,3 +87,24 @@ def text_extraction(img):
     # # Close the file
     # file.close
 # text_extraction()
+def text_extract(img):
+    base_image = img.copy()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (7, 7), 0)
+    thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+
+    kernal = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 50))
+    dilate = cv2.dilate(thresh, kernal, iterations=1)
+
+    cnts = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    cnts = sorted(cnts, key=lambda x: cv2.boundingRect(x)[1])
+
+    for c in cnts:
+        x, y, w, h = cv2.boundingRect(c)
+        if h > 200 and w > 250:
+            roi = base_image[y:y + h, x:x + w]
+            cv2.rectangle(img, (x, y), (x + w, y + h), (36, 255, 12), 2)
+
+    ocr_result_original = pytesseract.image_to_string(base_image)
+    print(ocr_result_original)
