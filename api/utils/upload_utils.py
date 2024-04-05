@@ -19,9 +19,9 @@ def upload_files(request):
         file.name = file_data.name
         file.size = len(file.read())
         files.append(file)
-
-    submission = Submission(user=request.user)
-    submission.save()
+    if len(files):
+        submission = Submission(user=request.user)
+        submission.save()
     for file in files:
         file_names = file.name.split('.')
         ext = file_names[-1].lower()
