@@ -96,9 +96,9 @@ class Data(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
     last_ocr_value = models.TextField(null=True, blank=True)
-    value = models.TextField(null=True, blank=True)
     normalized_value = models.TextField(null=True, blank=True)
     box = models.JSONField(null=True, blank=True)
+    symbol = models.CharField(null=True, blank=True)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='data_set')
 
 
@@ -107,10 +107,8 @@ class Question(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
-    category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
-    box = models.JSONField(null=True, blank=True)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='question_set')
-    image = models.ImageField(upload_to='question')
+    path = models.CharField(max_length=512)
 
 
 class QuestionData(models.Model):

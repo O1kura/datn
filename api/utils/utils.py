@@ -20,8 +20,5 @@ def save_file(dir_path, file):
     filename = str(uuid.uuid4()) + '.' + ext
 
     path = os.path.join(dir_path, filename)
-    print(path)
     file_name = default_storage.save(path, file)
-    path = default_storage.url(MEDIA_ROOT + '/' + file_name)
-    print(path)
-    return path
+    return MEDIA_ROOT + '/' + file_name

@@ -29,8 +29,8 @@ def upload_files(request):
         if ext not in ('jpg', 'png'):
             error_file_names.append(file.name)
         else:
-            path = save_file('origin', file)[1:]
-            f = File(name=file.name, extension=ext, path=path, size=file.size, submission=submission )
+            path = save_file('origin', file)
+            f = File(name=file.name, extension=ext, path=path, size=file.size, submission=submission)
             f.save()
             success_ids.append(f.submission_id)
 

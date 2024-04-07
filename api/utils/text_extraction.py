@@ -74,7 +74,6 @@ def text_line_extraction(image):
         # Recognize each line. Crop the image for each line and pass to OCR engine.
         line_image = image[y:y + h, x:x+w]
         line_text = pytesseract.image_to_string(line_image)
-        print(line_text)
         if (line_text.strip() != ''):
             # Draw rectangle around each line, thickness=-1 -> filled rectangle
             cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
