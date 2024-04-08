@@ -1,4 +1,5 @@
 import os
+import random
 import uuid
 from io import BytesIO
 from os import path
@@ -11,11 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
-from api.models.submission import Submission, File, Question
+from api.models.submission import Submission, File, Question, QuestionData, Category
 from api.serializers.image_serializer import ListSubmissionSerializer
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
-from api.utils.utils import save_file
+from api.utils.utils import save_file, generate_question
 from datn.settings import MEDIA_ROOT
 
 
@@ -43,15 +44,32 @@ class GenerateQuestionView(GenericAPIView):
         if not file:
             raise CustomException('file_does_not_exist', 'File not found')
         img = cv2.imread(file.path)
-        res, res2 = text_line_extraction(img)
 
-        is_success, buffer = cv2.imencode("."+file.extension, res2)
+        question = Question(file=file)
+        question.save()
+        ans = file.data_set.all()[random.randint(0, len(file.data_set - 1))]
+        q = generate_question(ans)
+        question_q = QuestionData(value=q, category=Category.cau_hoi, question=question, data=ans)
+        question_q.save()
+        question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an, question=question, data=ans)
+        question_a.save()
+        for data in file.data_set:
+            if data == ans:
+                continue
+            cv2.putText(img, data.symbol, (data.symbol_text.text_x, data.symbol_text.text_y),
+                        data.symbol_text.text_font, data.symbol_text.text_scale, data.symbol_text.color,
+                        data.symbol_text.text_thickness)
+
+            question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi, question=question,
+                                      data=ans)
+            question_c.save()
+
+        is_success, buffer = cv2.imencode("."+file.extension, img)
         io_buf = BytesIO(buffer)
         io_buf.name = 'temp.' + file.extension
-        path = save_file('question', io_buf)
+        img_path = save_file('question', io_buf)
 
-        for data in res:
-            pass
-        question = Question(file=file, path=path)
-        question.save()
-        return Response({'res': res})
+        question.path = img_path
+        question.save(update_fields='path')
+
+        return Response({'res': "ok"})

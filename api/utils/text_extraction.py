@@ -23,7 +23,7 @@ def get_file_content(image_file):
     return image_bytes
 
 
-def text_line_extraction(image):
+def text_line_extraction(image, get_image=False):
     # image = cv2.imread(image_path)
 
     # Check if the image is None
@@ -101,18 +101,36 @@ def text_line_extraction(image):
                 "text_y": text_y,
                 "w": text_width,
                 "h": text_height,
+                "box": {
+                    "x": x,
+                    "y": y,
+                    "rect_X": x + w,
+                    "rect_y": y + h,
+                },
                 "scale": text_scale,
                 "thickness": text_thickness,
+                "symbol_text": {
+                    "text_x": text_x,
+                    "text_y": text_y,
+                    "text_scale": text_scale,
+                    "text_font": text_font,
+                    "color": (255,0,0),
+                    "text_thickness": text_thickness
+                }
                 # "output_path": output_path
             }
             result.append(dict)
             
             # Viết chữ vào chính giữa hình chữ nhật
             # cv2.putText(image, text, (text_x, text_y), text_font, text_scale, (255,182,193), text_thickness)
-            cv2.putText(image, text, (text_x, text_y), text_font, text_scale, (255,0,0), text_thickness)
+            if get_image:
+                cv2.putText(image, text, (text_x, text_y), text_font, text_scale, (255,0,0), text_thickness)
 
     # cv2.imwrite(output_path, image)
-    return result, image
+    if get_image:
+        return result, image
+
+    return result
 
 # res = text_line_extraction(r'C:\Users\viet6\Downloads\image.png','C:\\Users\\viet6\\OneDrive\\Pictures\\Screenshots\\results.png')
 # print(res)

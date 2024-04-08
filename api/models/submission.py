@@ -97,8 +97,9 @@ class Data(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     last_ocr_value = models.TextField(null=True, blank=True)
     normalized_value = models.TextField(null=True, blank=True)
-    box = models.JSONField(null=True, blank=True)
+    box = models.JSONField()
     symbol = models.CharField(null=True, blank=True)
+    symbol_box = models.JSONField()
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='data_set')
 
 
