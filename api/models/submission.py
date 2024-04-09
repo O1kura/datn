@@ -98,7 +98,8 @@ class Data(models.Model):
     last_ocr_value = models.TextField(null=True, blank=True)
     normalized_value = models.TextField(null=True, blank=True)
     box = models.JSONField(null=True, blank=True)
-    symbol = models.CharField(null=True, blank=True)
+    symbol = models.CharField(max_length=5, null=True, blank=True)
+    symbol_box = models.JSONField(null=True, blank=True)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='data_set')
 
 
@@ -108,7 +109,7 @@ class Question(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='question_set')
-    path = models.CharField(max_length=512)
+    path = models.CharField(max_length=512, null=True, blank=True)
 
 
 class QuestionData(models.Model):

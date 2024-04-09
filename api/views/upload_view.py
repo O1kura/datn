@@ -22,7 +22,7 @@ class UnauthorizedUploadView(GenericAPIView):
 
             open_cv_image = convertPILtoOpenCVImage(image)
 
-            res, res2 = text_line_extraction(open_cv_image)
+            res, res2 = text_line_extraction(open_cv_image, get_image=True)
             # text_extract(open_cv_image)
             img = convertOpenCVImagetoPIL(res2)
             image = get_file_content(img)

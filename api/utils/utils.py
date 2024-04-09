@@ -22,3 +22,6 @@ def save_file(dir_path, file):
     path = os.path.join(dir_path, filename)
     file_name = default_storage.save(path, file)
     return MEDIA_ROOT + '/' + file_name
+
+def generate_question(ans):
+    return str(ans.symbol) + ' là gì?'
