@@ -40,6 +40,15 @@ class File(models.Model):
             url = ''
         return url
 
+    def get_content_image(self):
+        image_path = self.path
+        if image_path is None:
+            return False
+        else:
+            with open(image_path, "rb") as f:
+                image_file = f.read()
+        return image_file
+
     class Meta:
         db_table = 'file'
 @receiver(models.signals.pre_delete, sender=File)
@@ -119,5 +128,5 @@ class QuestionData(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
     category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
-    data = models.ForeignKey(Data, on_delete=models.CASCADE)
+    data = models.ForeignKey(Data, on_delete=models.SET_NULL)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_data_set')

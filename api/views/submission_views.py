@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
 from api.models.submission import Submission, File, Question, QuestionData, Category, Data
-from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer
+from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
 from api.utils.utils import save_file, generate_question
@@ -25,6 +25,7 @@ class ListSubmissionView(ListCreateAPIView):
 
     def get_serializer(self, *args, **kwargs):
         return ListSubmissionSerializer(*args, **kwargs)
+
     #
     def get_queryset(self):
         # return list_submissions(self)
@@ -51,7 +52,8 @@ class GenerateQuestionView(GenericAPIView):
         q = generate_question(ans)
         question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question, data=ans)
         question_q.save()
-        question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question, data=ans)
+        question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question,
+                                  data=ans)
         question_a.save()
         for data in file.data_set.all():
             symbol_box = data.symbol_box
@@ -71,7 +73,8 @@ class GenerateQuestionView(GenericAPIView):
             if data == ans:
                 continue
 
-            question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value, question=question,
+            question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value,
+                                      question=question,
                                       data=ans)
             question_c.save()
 
@@ -83,4 +86,13 @@ class GenerateQuestionView(GenericAPIView):
         question.path = img_path
         question.save(update_fields={'path'})
 
-        return Response(QuestionSerializer(question).data)
+        return Response(QuestionSerializer(intance=question).data)
+
+
+class ListFilesView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        files = File.objects.filter(submission__user=request.user)
+        data = FileSerializer(instance=files, many=True).data
+        return Response(data)
