@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from api.views import rbac_views, user_views, upload_view, submission_views
+from api.views import rbac_views, user_views, upload_view, submission_views, question_view
 
 urlpatterns = [
     path('login', rbac_views.LoginView.as_view()),
@@ -15,5 +15,7 @@ urlpatterns = [
     path('extract', upload_view.UnauthorizedUploadView.as_view()),
     path('submissions', submission_views.ListSubmissionView.as_view()),
     path('register', rbac_views.RegisterView.as_view()),
-    path('file/<int:file_id>/generate',submission_views.GenerateQuestionView.as_view())
+    path('file/<int:file_id>/generate', submission_views.GenerateQuestionView.as_view()),
+    path('question', question_view.QuestionView.as_view()),
+    path('question/<int:question_id>', question_view.QuestionDetailView.as_view())
 ]
