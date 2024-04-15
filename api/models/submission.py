@@ -120,6 +120,15 @@ class Question(models.Model):
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='question_set')
     path = models.CharField(max_length=512, null=True, blank=True)
 
+    def get_content_image(self):
+        image_path = self.path
+        if image_path is None:
+            return False
+        else:
+            with open(image_path, "rb") as f:
+                image_file = f.read()
+        return image_file
+
 
 class QuestionData(models.Model):
     id = models.AutoField(primary_key=True)

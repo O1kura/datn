@@ -86,7 +86,7 @@ class GenerateQuestionView(GenericAPIView):
         question.path = img_path
         question.save(update_fields={'path'})
 
-        return Response(QuestionSerializer(intance=question).data)
+        return Response(QuestionSerializer(instance=question).data)
 
 
 class ListFilesView(GenericAPIView):
