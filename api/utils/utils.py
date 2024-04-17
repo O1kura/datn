@@ -5,6 +5,17 @@ from api.models.token import SlidingToken
 from datn.settings import MEDIA_ROOT
 
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        # Use the first item in X-Forwarded-For (or customize as needed)
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        # If X-Forwarded-For is not present, use REMOTE_ADDR
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
 def get_tokens_for_user(user, lifetime=None):
     token = SlidingToken.for_user(user, lifetime)
     return str(token)

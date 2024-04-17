@@ -130,6 +130,13 @@ class Question(models.Model):
         return image_file
 
 
+@receiver(models.signals.pre_delete, sender=Question)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    path = instance.path
+    if os.path.isfile(path):
+        os.remove(path)
+
+
 class QuestionData(models.Model):
     id = models.AutoField(primary_key=True)
     created_at = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
@@ -137,5 +144,5 @@ class QuestionData(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
     category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
-    data = models.ForeignKey(Data, on_delete=models.SET_NULL)
+    data = models.ForeignKey(Data, on_delete=models.SET_NULL, null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_data_set')

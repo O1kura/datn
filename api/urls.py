@@ -17,5 +17,7 @@ urlpatterns = [
     path('register', rbac_views.RegisterView.as_view()),
     path('file/<int:file_id>/generate', submission_views.GenerateQuestionView.as_view()),
     path('question', question_view.QuestionView.as_view()),
-    path('question/<int:question_id>', question_view.QuestionDetailView.as_view())
+    path('question/<int:question_id>', question_view.QuestionDetailView.as_view()),
+    path('question/<int:question_id>/image', question_view.QuestionImageView.as_view()),
+    path('question_image/<int:question_id>', question_view.QuestionWithImageDetailView.as_view()),
 ]

@@ -45,6 +45,15 @@ class QuestionSerializer(serializers.ModelSerializer):
         return rep
 
 
+class QuestionWithImageSerializer(QuestionSerializer):
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        img = instance.get_content_image()
+        base64_string = base64.b64encode(img).decode('utf-8')
+        rep['image'] = base64_string
+        return rep
+
+
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
