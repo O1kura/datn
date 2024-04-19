@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.serializers import BaseSerializer
 
 from api.models.submission import Submission, Question, File, Category
+from api.serializers.data_serializer import QuestionDataSerializer
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -41,7 +42,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         # buf = None
         # base64.encode(image, buf)
         # rep['image'] = buf
-        rep['question_data'] = data
+        rep['question'] = data
+        rep['question_data'] = QuestionDataSerializer(instance=question_data, many=True).data
         return rep
 
 
