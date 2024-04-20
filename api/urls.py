@@ -22,4 +22,5 @@ urlpatterns = [
     path('question/<int:question_id>/image', question_view.QuestionImageView.as_view()),
     path('question_image/<int:question_id>', question_view.QuestionWithImageDetailView.as_view()),
     path('question/<int:question_id>/<int:question_data_id>', question_view.QuestionDataView.as_view()),
+    path('question/<int:question_id>/add', question_view.AddQuestionDataView.as_view()),
 ]

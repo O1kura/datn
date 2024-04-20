@@ -144,5 +144,5 @@ class QuestionData(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
     category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
-    data = models.ForeignKey(Data, on_delete=models.SET_NULL, null=True)
+    data = models.ForeignKey(Data, on_delete=models.SET_NULL, null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_data_set')
