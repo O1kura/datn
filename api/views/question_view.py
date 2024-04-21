@@ -31,7 +31,7 @@ class QuestionDetailView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         res = QuestionSerializer(instance=question).data
         return Response(res)
@@ -42,7 +42,7 @@ class QuestionDetailView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         question.delete()
         return Response({'status': 'OK'})
@@ -57,7 +57,7 @@ class QuestionImageView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         image = question.get_content_image()
         return HttpResponse(image, content_type='image/JPEG')
@@ -72,7 +72,7 @@ class QuestionWithImageDetailView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         res = QuestionWithImageSerializer(instance=question).data
         return Response(res)
@@ -87,7 +87,7 @@ class QuestionDataView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         question_data = question.question_data_set.filter(id=question_data_id).first()
         if not question_data:
@@ -106,7 +106,7 @@ class QuestionDataView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         question_data = question.question_data_set.filter(id=question_data_id).first()
         if not question_data:
@@ -139,7 +139,7 @@ class QuestionDataView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         question_data = question.question_data_set.filter(id=question_data_id).first()
         if not question_data:
@@ -166,7 +166,7 @@ class AddQuestionDataView(GenericAPIView):
             raise CustomException('model_not_found', 'No question found')
 
         if question.file.submission.user != request.user:
-            raise CustomException('model_not_found', 'Not your questions')
+            raise CustomException('permission_denied', 'Not your questions')
 
         data = json.loads(request.body)
         value = data.get('value', '')

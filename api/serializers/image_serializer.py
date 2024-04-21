@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.serializers import BaseSerializer
 
 from api.models.submission import Submission, Question, File, Category
-from api.serializers.data_serializer import QuestionDataSerializer
+from api.serializers.data_serializer import QuestionDataSerializer, DataSerializer
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -60,3 +60,16 @@ class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
         fields = '__all__'
+
+
+class FileDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        data_set = instance.data_set.filter(deleted_at__isnull=True)
+        res = DataSerializer(instance=data_set, many=True).data
+        rep['data_Set'] = res
+        return rep

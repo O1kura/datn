@@ -1,3 +1,5 @@
+import datetime
+import json
 import os
 import random
 import uuid
@@ -7,13 +9,17 @@ from os import path
 import cv2
 from PIL import Image
 from django.core.files.storage import default_storage
+from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
 from api.models.submission import Submission, File, Question, QuestionData, Category, Data
-from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer
+from api.serializers.data_serializer import DataSerializer
+from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer, \
+    FileDetailSerializer
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
 from api.utils.utils import save_file, generate_question
@@ -44,18 +50,20 @@ class GenerateQuestionView(GenericAPIView):
         file = File.objects.filter(id=file_id).first()
         if not file:
             raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
         img = cv2.imread(file.path)
         question = Question(file=file)
         question.save()
-        ran = random.randint(0, len(file.data_set.all()) - 1)
-        ans = file.data_set.all()[ran]
+        ran = random.randint(0, len(file.data_set.filter(deleted_at__isnull=True)) - 1)
+        ans = file.data_set.filter(deleted_at__isnull=True)[ran]
         q = generate_question(ans)
         question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question, data=ans)
         question_q.save()
         question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question,
                                   data=ans)
         question_a.save()
-        for data in file.data_set.all():
+        for data in file.data_set.filter(deleted_at__isnull=True):
             symbol_box = data.symbol_box
             box = data.box
 
@@ -96,3 +104,99 @@ class ListFilesView(GenericAPIView):
         files = File.objects.filter(submission__user=request.user)
         data = FileSerializer(instance=files, many=True).data
         return Response(data)
+
+
+class FileDetailView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, file_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+
+        res = FileDetailSerializer(instance=file).data
+        return Response(res)
+
+    def delete(self, request, file_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+
+        file.delete()
+        return Response({'status': "ok"})
+
+
+class FileImageView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, file_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+
+        image = file.get_content_image()
+        return HttpResponse(image, content_type='image/JPEG')
+
+
+class DataDetailView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, file_id, data_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+        data = file.data_set.filter(id=data_id, deleted_at__isnull=True).first()
+        if not data:
+            raise CustomException('data_does_not_exits', 'Data not found')
+        body = json.loads(request.body)
+        value = body.get('value', None)
+        if value:
+            data.normalized_value = value
+            data.save()
+
+            return Response(DataSerializer(instance=data).data)
+
+        return Response({'status': 'ok'})
+
+    def delete(self, request, file_id, data_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+        data = file.data_set.filter(id=data_id).first()
+        if not data:
+            raise CustomException('data_does_not_exits', 'Data not found')
+
+        data.deleted_at = timezone.now()
+        data.save()
+
+        return Response({'status': 'ok'})
+
+
+class RestoreDataDetailView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, file_id, data_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+        data = file.data_set.filter(id=data_id).first()
+        if not data:
+            raise CustomException('data_does_not_exits', 'Data not found')
+
+        data.normalized_value = data.last_ocr_value
+        data.deleted_at = None
+        data.save()
+
+        return Response(DataSerializer(instance=data).data)

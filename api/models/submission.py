@@ -15,7 +15,8 @@ class Submission(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False, db_index=True)
     last_ocr_time = models.DateTimeField(auto_now_add=True, editable=False, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
-    user = models.ForeignKey(User , default=None, on_delete=models.CASCADE, related_name='submission_set')
+    file_count = models.IntegerField(default=0)
+    user = models.ForeignKey(User, default=None, on_delete=models.CASCADE, related_name='submission_set')
 
     class Meta:
         db_table = 'submission'
@@ -32,14 +33,6 @@ class File(models.Model):
     size = models.IntegerField(null=True, blank=True)
     submission = models.ForeignKey('Submission', on_delete=models.DO_NOTHING, related_name='file_set')
 
-    @property
-    def imageURL(self):
-        try:
-            url = self.image.url
-        except ValueError:
-            url = ''
-        return url
-
     def get_content_image(self):
         image_path = self.path
         if image_path is None:
@@ -51,41 +44,12 @@ class File(models.Model):
 
     class Meta:
         db_table = 'file'
+
+
 @receiver(models.signals.pre_delete, sender=File)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
-    """
-    Deletes file from filesystem
-    when corresponding `MediaFile` object is deleted.
-    """
-    img = instance.image
-    old_file = instance.imageURL
-    path = Path(os.path.join(settings.MEDIA_ROOT, img.name))
-
-    if old_file != '':
-        if os.path.isfile(path):
-            os.remove(path)
-
-
-@receiver(models.signals.pre_save, sender=File)
-def auto_delete_file_on_change(sender, instance, **kwargs):
-    """
-    Deletes old file from filesystem
-    when corresponding `MediaFile` object is updated
-    with new file.
-    """
-    if not instance.id:
-        return False
-
-    product = File.objects.get(id=instance.id)
-    img = product.image
-    old_file = product.imageURL
-    path = Path(os.path.join(settings.MEDIA_ROOT, img.name))
-
-    if old_file == '':
-        return False
-
-    new_file = instance.imageURL
-    if not old_file == new_file:
+    path = instance.path
+    if os.path.isfile(path):
         os.remove(path)
 
 

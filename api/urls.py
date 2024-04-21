@@ -15,8 +15,14 @@ urlpatterns = [
     path('extract', upload_view.UnauthorizedUploadView.as_view()),
     path('submissions', submission_views.ListSubmissionView.as_view()),
     path('register', rbac_views.RegisterView.as_view()),
+    # File and file data
     path('file', submission_views.ListFilesView.as_view()),
+    path('file/<int:file_id>', submission_views.FileDetailView.as_view()),
+    path('file/<int:file_id>/image', submission_views.FileImageView.as_view()),
     path('file/<int:file_id>/generate', submission_views.GenerateQuestionView.as_view()),
+    path('file/<int:file_id>/<int:data_id>', submission_views.DataDetailView.as_view()),
+    path('file/<int:file_id>/<int:data_id>/restore', submission_views.RestoreDataDetailView.as_view()),
+    # Question and question data
     path('question', question_view.QuestionView.as_view()),
     path('question/<int:question_id>', question_view.QuestionDetailView.as_view()),
     path('question/<int:question_id>/image', question_view.QuestionImageView.as_view()),

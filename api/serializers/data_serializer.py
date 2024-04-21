@@ -6,7 +6,7 @@ from api.models.submission import Data, QuestionData, Category
 class DataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Data
-        exclude = ['deleted_at']
+        fields = '__all__'
 
 
 class QuestionDataSerializer(serializers.ModelSerializer):
