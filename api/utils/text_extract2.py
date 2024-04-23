@@ -79,7 +79,7 @@ def text_extraction(img):
 
         res.append(text)
 
-    return res
+    return res, im2
     # Appending the text into file
     # file.write(text)
     # file.write("\n")
@@ -87,6 +87,8 @@ def text_extraction(img):
     # # Close the file
     # file.close
 # text_extraction()
+
+
 def text_extract(img):
     base_image = img.copy()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -108,3 +110,34 @@ def text_extract(img):
 
     ocr_result_original = pytesseract.image_to_string(base_image)
     print(ocr_result_original)
+
+
+def text_extract_3(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    lower = np.array([0, 0, 218])
+    upper = np.array([157, 54, 255])
+    mask = cv2.inRange(hsv, lower, upper)
+
+    # Create horizontal kernel and dilate to connect text characters
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 3))
+    dilate = cv2.dilate(mask, kernel, iterations=5)
+
+    # Find contours and filter using aspect ratio
+    # Remove non-text contours by filling in the contour
+    cnts = cv2.findContours(dilate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    for c in cnts:
+        x, y, w, h = cv2.boundingRect(c)
+        ar = w / float(h)
+        if ar < 5:
+            cv2.drawContours(dilate, [c], -1, (0, 0, 0), -1)
+
+    # Bitwise dilated image with mask, invert, then OCR
+    result = 255 - cv2.bitwise_and(dilate, mask)
+    data = pytesseract.image_to_string(result, lang='eng', config='--psm 6')
+    print(data)
+
+    cv2.imshow('mask', mask)
+    cv2.imshow('dilate', dilate)
+    cv2.imshow('result', result)
+    cv2.waitKey()

@@ -50,10 +50,10 @@ def text_line_extraction(image, get_image=False):
     contours = contours[0] if len(contours) == 2 else contours[1]
 
     # Filter contours to select those whose width is at least 3 times its height
-    filtered_contours = [cnt for cnt in contours if (cv2.boundingRect(cnt)[2] / cv2.boundingRect(cnt)[3])>=3.0]
+    # filtered_contours = [cnt for cnt in contours if (cv2.boundingRect(cnt)[2] / cv2.boundingRect(cnt)[3])>=3.0]
 
     # Sort contours based on y-coordinate
-    sorted_contours = sorted(filtered_contours, key=lambda contour: cv2.boundingRect(contour)[1])
+    sorted_contours = sorted(contours, key=lambda contour: cv2.boundingRect(contour)[1])
     # sorted_contours = sorted(contours, key=lambda contour: cv2.boundingRect(contour)[1])
     # print(len(sorted_contours))
     # Step 4: Recognize text lines
@@ -135,5 +135,111 @@ def text_line_extraction(image, get_image=False):
 
     return result
 
-# res = text_line_extraction(r'C:\Users\viet6\Downloads\image.png','C:\\Users\\viet6\\OneDrive\\Pictures\\Screenshots\\results.png')
-# print(res)
+
+def text_line_extraction_2(image, get_image=False):
+    # image = cv2.imread(image_path)
+
+    # Check if the image is None
+    if image is None:
+        raise ValueError("Invalid image file or path.")
+
+    # Step 2: Preprocess the image
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blur = cv2.GaussianBlur(gray, (3, 3), 0)
+    bw = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+
+    # Extract only using pytesseract
+    results = pytesseract.image_to_data(bw, output_type='dict')
+
+    dict_res = {}
+    # loop over each of the individual text localizations
+    for i in range(0, len(results["text"])):
+        # extract the bounding box coordinates of the text region from
+        # the current result
+        x = results["left"][i]
+        y = results["top"][i]
+        w = results["width"][i]
+        h = results["height"][i]
+        # extract the OCR text itself along with the confidence of the
+        # text localization
+        block_num = results["block_num"][i]
+        text = results["text"][i]
+        conf = int(results["conf"][i])
+        # filter out weak confidence text localizations
+        # combine text from block to a string and get the bounds of that block
+        if conf > 80 and text.strip() != '':
+            if block_num in dict_res:
+                dict_res[block_num]['text'] = dict_res[block_num]['text'] + ' ' + text
+                dict_res[block_num]["x"] = min(dict_res[block_num]["x"], x)
+                dict_res[block_num]["y"] = min(dict_res[block_num]["y"], y)
+                dict_res[block_num]["rect_x"] = max(dict_res[block_num]["rect_x"], x + w)
+                dict_res[block_num]["rect_y"] = max(dict_res[block_num]["rect_y"], y + h)
+            else:
+                dict_res[block_num] = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h}
+
+    result = []
+    uppercase_letters = list(string.ascii_uppercase)
+
+    # Loop through the block in dict_res calculated above
+    # for formatting response data and write to image if necessary
+    for block in dict_res.values():
+        x = block['x']
+        y = block['y']
+        w = block['rect_x'] - x
+        h = block['rect_y'] - y
+        # Draw rectangle around each line, thickness=-1 -> filled rectangle
+        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # Tính toán vị trí để viết chữ vào giữa hình chữ nhật
+        text = uppercase_letters.pop(0)
+        text_font = cv2.FONT_HERSHEY_SIMPLEX
+
+        text_width, text_height = cv2.getTextSize(text, text_font, 1, 2)[0]
+        text_scale = min(w / text_width, h / text_height) * 0.8
+        text_thickness = 1
+
+        text_size = cv2.getTextSize(text, text_font, text_scale, text_thickness)[0]
+        text_width, text_height = text_size[0], text_size[1]
+        text_x = int((w - text_width) / 2) + x
+        text_y = int((h + text_height) / 2) + y
+
+        dict = {
+            "symbol": text,
+            "text": block['text'],
+            "x": x,
+            "y": y,
+            "text_x": text_x,
+            "text_y": text_y,
+            "w": text_width,
+            "h": text_height,
+            "box": {
+                "x": x,
+                "y": y,
+                "rect_x": x + w,
+                "rect_y": y + h,
+                "filled_color": (255, 255, 255),
+                "border_color": (0, 255, 0),
+                "border_thickness": 2,
+            },
+            "scale": text_scale,
+            "thickness": text_thickness,
+            "symbol_text": {
+                "text_x": text_x,
+                "text_y": text_y,
+                "text_scale": text_scale,
+                "text_font": text_font,
+                "color": (255, 0, 0),
+                "text_thickness": text_thickness
+            }
+        }
+        result.append(dict)
+
+        # Viết chữ vào chính giữa hình chữ nhật
+        if get_image:
+            cv2.putText(image, text, (text_x, text_y), text_font, text_scale, (255, 0, 0), text_thickness)
+
+    if get_image:
+        return result, image
+
+    return result
