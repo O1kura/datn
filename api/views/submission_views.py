@@ -129,6 +129,23 @@ class FileDetailView(GenericAPIView):
         file.delete()
         return Response({'status': "ok"})
 
+    def put(self, request, file_id):
+        file = File.objects.filter(id=file_id).first()
+        if not file:
+            raise CustomException('file_does_not_exist', 'File not found')
+        if file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your file')
+
+        data = json.loads(request.body)
+        display_name = data.get('display_name', None)
+
+        if display_name:
+            file.display_name = display_name
+            file.save()
+
+        res = FileDetailSerializer(instance=file).data
+        return Response(res)
+
 
 class FileImageView(GenericAPIView):
     permission_classes = [IsAuthenticated]

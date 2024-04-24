@@ -36,7 +36,7 @@ def upload_files(request):
             continue
 
         path = save_file('origin', file)
-        f = File(name=file.name, extension=ext, path=path, size=file.size, submission=submission)
+        f = File(name=file.name, display_name=file.name, extension=ext, path=path, size=file.size, submission=submission)
         f.save()
 
         open_cv_image = convertPILtoOpenCVImage(image)

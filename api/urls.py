@@ -8,10 +8,12 @@ from api.views import rbac_views, user_views, upload_view, submission_views, que
 
 urlpatterns = [
     path('login', rbac_views.LoginView.as_view()),
-    path('login', rbac_views.LogoutView.as_view()),
+    path('logout', rbac_views.LogoutView.as_view()),
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('user', user_views.UserView.as_view()),
+    path('me', user_views.CurrentUserView.as_view()),
+    path('me/change_password', user_views.ChangePassword.as_view()),
     path('extract', upload_view.UnauthorizedUploadView.as_view()),
     path('submissions', submission_views.ListSubmissionView.as_view()),
     path('register', rbac_views.RegisterView.as_view()),

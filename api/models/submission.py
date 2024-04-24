@@ -28,6 +28,7 @@ class File(models.Model):
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
     name = models.CharField(max_length=127)
+    display_name = models.CharField(max_length=127, null=True, blank=True)
     extension = models.CharField(max_length=127, null=True, blank=True)
     path = models.CharField(max_length=512)
     size = models.IntegerField(null=True, blank=True)
