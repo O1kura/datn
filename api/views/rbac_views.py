@@ -1,13 +1,14 @@
 import json
 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+
 from rest_framework import status
 # from postmarker.models import status
 # from requests import Response
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from api.middlewares.custome_middleware import CustomException
+from api.models import User
 from api.serializers.user_serializer import UserSerializer
 from api.utils.utils import get_tokens_for_user
 
