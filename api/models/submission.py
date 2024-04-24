@@ -8,6 +8,8 @@ from datn import settings
 from django.db import models
 from django.dispatch import receiver
 
+from datn.settings import AUTH_USER_MODEL
+
 
 class Submission(models.Model):
     id = models.AutoField(primary_key=True)
@@ -16,7 +18,7 @@ class Submission(models.Model):
     last_ocr_time = models.DateTimeField(auto_now_add=True, editable=False, null=True, blank=True)
     deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
     file_count = models.IntegerField(default=0)
-    user = models.ForeignKey(User, default=None, on_delete=models.CASCADE, related_name='submission_set')
+    user = models.ForeignKey(AUTH_USER_MODEL, default=None, on_delete=models.CASCADE, related_name='submission_set')
 
     class Meta:
         db_table = 'submission'

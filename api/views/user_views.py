@@ -1,11 +1,11 @@
 import json
 
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.models import User
 from rest_framework.generics import GenericAPIView
 from rest_framework import permissions
 
 from api.middlewares.custome_middleware import CustomException
+from api.models import User
 from api.serializers.user_serializer import UserSerializer
 from rest_framework.response import Response
 
