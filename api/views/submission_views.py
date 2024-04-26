@@ -18,6 +18,7 @@ from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
 from api.models.submission import Submission, File, Question, QuestionData, Category, Data
+from api.models.tag import Tag
 from api.serializers.data_serializer import DataSerializer
 from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer, \
     FileDetailSerializer
@@ -54,7 +55,7 @@ class GenerateQuestionView(GenericAPIView):
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
         img = cv2.imread(file.path)
-        question = Question(file=file)
+        question = Question(file=file, display_name=file.display_name)
         question.save()
 
         data = file.data_set.filter(deleted_at__isnull=True).all()
@@ -144,6 +145,10 @@ class FileDetailView(GenericAPIView):
 
         data = json.loads(request.body)
         display_name = data.get('display_name', None)
+        tags = data.get('tags', [])
+        if isinstance(tags, list):
+            existed_tags = Tag.objects.filter(tag_name__in=tags)
+            tags = list(set(tags) - set(existed_tags))
 
         if display_name:
             file.display_name = display_name

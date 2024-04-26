@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from api.models.submission import Data, QuestionData, Category
+from api.models.tag import Tag
 
 
 class DataSerializer(serializers.ModelSerializer):
@@ -21,3 +22,7 @@ class QuestionDataSerializer(serializers.ModelSerializer):
     #         raise serializers.ValidationError("At least one correct answer must be associated with this question.")
     #     return data
 
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
