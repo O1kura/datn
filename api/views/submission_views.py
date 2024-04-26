@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import random
+import string
 import uuid
 from io import BytesIO
 from os import path
@@ -55,15 +56,18 @@ class GenerateQuestionView(GenericAPIView):
         img = cv2.imread(file.path)
         question = Question(file=file)
         question.save()
-        ran = random.randint(0, len(file.data_set.filter(deleted_at__isnull=True)) - 1)
-        ans = file.data_set.filter(deleted_at__isnull=True)[ran]
-        q = generate_question(ans)
-        question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question, data=ans)
-        question_q.save()
+
+        data = file.data_set.filter(deleted_at__isnull=True).all()
+        random_data = random.sample(list(data), 4)
+        ran = random.randint(0, 3)
+        ans = random_data[ran]
         question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question,
                                   data=ans)
         question_a.save()
-        for data in file.data_set.filter(deleted_at__isnull=True):
+
+        uppercase_letters = list(string.ascii_uppercase)
+        for data in random_data:
+            symbol = uppercase_letters.pop(0)
             symbol_box = data.symbol_box
             box = data.box
 
@@ -74,17 +78,19 @@ class GenerateQuestionView(GenericAPIView):
                           (box['rect_x'], box['rect_y']),
                           box['border_color'], box['border_thickness'])
 
-            cv2.putText(img, data.symbol, (symbol_box['text_x'], symbol_box['text_y']),
+            cv2.putText(img, symbol, (symbol_box['text_x'], symbol_box['text_y']),
                         symbol_box['text_font'], symbol_box['text_scale'], symbol_box['color'],
                         symbol_box['text_thickness'])
 
             if data == ans:
-                continue
-
-            question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value,
-                                      question=question,
-                                      data=ans)
-            question_c.save()
+                q = generate_question(symbol)
+                question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question, data=ans)
+                question_q.save()
+            else:
+                question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value,
+                                          question=question,
+                                          data=ans)
+                question_c.save()
 
         is_success, buffer = cv2.imencode("." + file.extension, img)
         io_buf = BytesIO(buffer)

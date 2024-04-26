@@ -45,8 +45,7 @@ def upload_files(request):
         res = text_line_extraction_2(open_cv_image)
 
         for data in res:
-            data = Data(normalized_value=data['text'], last_ocr_value=data['text'], box=data['box'],
-                        symbol=data['symbol'], symbol_box=data['symbol_text'], file=f)
+            data = Data(normalized_value=data['text'], last_ocr_value=data['text'], box=data['box'], symbol_box=data['symbol_text'], file=f)
             data.save()
 
         success_ids.append(f.submission_id)

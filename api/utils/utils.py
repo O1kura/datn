@@ -34,5 +34,6 @@ def save_file(dir_path, file):
     file_name = default_storage.save(path, file)
     return MEDIA_ROOT + '/' + file_name
 
-def generate_question(ans):
-    return str(ans.symbol) + ' là gì?'
+
+def generate_question(symbol):
+    return str(symbol) + ' là gì?'
