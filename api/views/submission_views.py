@@ -5,11 +5,13 @@ import random
 import string
 import uuid
 from io import BytesIO
+from itertools import chain
 from os import path
 
 import cv2
 from PIL import Image
 from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils import timezone
 from rest_framework.generics import GenericAPIView, ListCreateAPIView
@@ -24,7 +26,7 @@ from api.serializers.image_serializer import ListSubmissionSerializer, QuestionS
     FileDetailSerializer
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
-from api.utils.utils import save_file, generate_question
+from api.utils.utils import save_file, generate_question, update_tags, try_parse_datetime
 from datn.settings import MEDIA_ROOT
 
 
@@ -109,6 +111,26 @@ class ListFilesView(GenericAPIView):
 
     def get(self, request):
         files = File.objects.filter(submission__user=request.user)
+
+        params = request.query_params
+        display_name = params.get('display_name', None)
+        tags = params.get('tags', None)
+        start = params.get('from', None)
+        end = params.get('to', None)
+
+        start = try_parse_datetime(start)
+        end = try_parse_datetime(end)
+
+        if display_name:
+            files = files.filter(Q(display_name__contains=display_name)|Q( name__contains=display_name))
+        if start:
+            files = files.filter(created_at__gte=start)
+        if end:
+            files = files.filter(created_at__lte=end)
+        if tags:
+            if not isinstance(tags, list):
+                tags = [tags]
+            files = files.filter(tags__tag_name__in=tags)
         data = FileSerializer(instance=files, many=True).data
         return Response(data)
 
@@ -147,8 +169,8 @@ class FileDetailView(GenericAPIView):
         display_name = data.get('display_name', None)
         tags = data.get('tags', [])
         if isinstance(tags, list):
-            existed_tags = Tag.objects.filter(tag_name__in=tags)
-            tags = list(set(tags) - set(existed_tags))
+            tags_model = update_tags(tags)
+            file.tags.set(tags_model)
 
         if display_name:
             file.display_name = display_name

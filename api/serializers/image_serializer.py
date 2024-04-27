@@ -44,6 +44,9 @@ class QuestionSerializer(serializers.ModelSerializer):
         # rep['image'] = buf
         rep['question'] = data
         rep['question_data'] = QuestionDataSerializer(instance=question_data, many=True).data
+
+        rep['tags'] = [str(tag) for tag in instance.tags.all()]
+
         return rep
 
 
@@ -72,4 +75,7 @@ class FileDetailSerializer(serializers.ModelSerializer):
         data_set = instance.data_set.filter(deleted_at__isnull=True)
         res = DataSerializer(instance=data_set, many=True).data
         rep['data_Set'] = res
+
+        rep['tags'] = [str(tag) for tag in instance.tags.all()]
+
         return rep

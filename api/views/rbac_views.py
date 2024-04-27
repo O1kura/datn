@@ -64,6 +64,8 @@ class RegisterView(GenericAPIView):
         if User.objects.filter(email=email).first():
             raise CustomException('email_existed', 'Email already exists')
         user = User.objects.create_user(username=username, password=password, email=email)
-        user_serializer = UserSerializer(instance=user)
+        user_serializer = UserSerializer(instance=user, data=data, partial=True)
+        if user_serializer.is_valid(raise_exception=False):
+            user_serializer.save()
 
         return Response(user_serializer.data)

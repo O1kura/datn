@@ -1,25 +1,54 @@
 import json
 
+from django.db.models import Count, F
 from django.http import HttpResponse
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
 from api.models.submission import Question, Category, QuestionData
+from api.models.tag import Tag
 from api.serializers.data_serializer import QuestionDataSerializer
 from api.serializers.image_serializer import QuestionSerializer, QuestionWithImageSerializer
+from api.utils.utils import update_tags, try_parse_datetime
 
 
-class QuestionView(GenericAPIView):
+class QuestionView(ListAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = QuestionSerializer
 
-    def get(self, request):
-        user = request.user
-        questions = Question.objects.filter(file__submission__user=user)
-        res = QuestionSerializer(instance=questions, many=True).data
+    def get_queryset(self):
+        user = self.request.user
+        params = self.request.query_params
+        display_name = params.get('display_name', None)
+        tags = params.get('tags', None)
+        start = params.get('from', None)
+        end = params.get('to', None)
 
-        return Response(res)
+        start = try_parse_datetime(start)
+        end = try_parse_datetime(end)
+
+        question = Question.objects.filter(file__submission__user=user)
+        if display_name:
+            question = question.filter(display_name__contains=display_name)
+        if start:
+            question = question.filter(created_at__gte=start)
+        if end:
+            question = question.filter(created_at__lte=end)
+        if tags:
+            if not isinstance(tags, list):
+                tags = [tags]
+            question = question.filter(tags__tag_name__in=tags)
+
+        return question
+
+    # def get(self, request):
+    #     user = request.user
+    #     questions = Question.objects.filter(file__submission__user=user)
+    #     res = QuestionSerializer(instance=questions, many=True).data
+    #
+    #     return Response(res)
 
 
 class QuestionDetailView(GenericAPIView):
@@ -32,6 +61,29 @@ class QuestionDetailView(GenericAPIView):
 
         if question.file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your questions')
+
+        res = QuestionSerializer(instance=question).data
+        return Response(res)
+
+    def put(self, request, question_id):
+        question = Question.objects.filter(id=question_id).first()
+        if question is None:
+            raise CustomException('model_not_found', 'No question found')
+
+        if question.file.submission.user != request.user:
+            raise CustomException('permission_denied', 'Not your questions')
+
+        data = json.loads(request.body)
+        display_name = data.get('display_name', None)
+        tags = data.get('tags', [])
+
+        if isinstance(tags, list):
+            tags_model = update_tags(tags)
+            question.tags.set(tags_model)
+
+        if display_name:
+            question.display_name = display_name
+            question.save()
 
         res = QuestionSerializer(instance=question).data
         return Response(res)

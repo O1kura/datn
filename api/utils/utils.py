@@ -1,6 +1,9 @@
+from datetime import datetime
 import os
 import uuid
 from django.core.files.storage import default_storage
+
+from api.models.tag import Tag
 from api.models.token import SlidingToken
 from datn.settings import MEDIA_ROOT
 
@@ -37,3 +40,30 @@ def save_file(dir_path, file):
 
 def generate_question(symbol):
     return str(symbol) + ' là gì?'
+
+
+def update_tags(tags):
+    existed_tags = Tag.objects.filter(tag_name__in=tags)
+    existed_tags_values = existed_tags.values_list('tag_name', flat=True)
+    _tags = list(set(tags) - set(existed_tags_values))
+    tag_objects = [Tag(tag_name=tag) for tag in _tags]
+    Tag.objects.bulk_create(tag_objects, unique_fields=['tag_name'], ignore_conflicts=True)
+
+    return Tag.objects.filter(tag_name__in=tags)
+
+
+def try_parse_datetime(inp: str):
+    if not inp:
+        return None
+    try:
+        inp = datetime.strptime(inp, "%Y-%m-%d %H:%M:%S")
+        return inp
+    except ValueError:
+        pass
+
+    try:
+        inp = datetime.strptime(inp, "%Y-%m-%d")
+    except ValueError:
+        inp = None
+
+    return inp

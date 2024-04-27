@@ -54,7 +54,7 @@ class File(models.Model):
 @receiver(models.signals.pre_delete, sender=File)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
     path = instance.path
-    if os.path.isfile(path):
+    if path and os.path.isfile(path):
         os.remove(path)
 
 
@@ -85,7 +85,7 @@ class Question(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
     updated_at = models.DateTimeField(auto_now=True, editable=False, null=False, blank=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
-    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='question_set')
+    file = models.ForeignKey(File, on_delete=models.SET_NULL, related_name='question_set', null=True)
     path = models.CharField(max_length=512, null=True, blank=True)
     display_name = models.CharField(max_length=127, null=True, blank=True)
     tags = models.ManyToManyField(Tag)
@@ -103,7 +103,7 @@ class Question(models.Model):
 @receiver(models.signals.pre_delete, sender=Question)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
     path = instance.path
-    if os.path.isfile(path):
+    if path and os.path.isfile(path):
         os.remove(path)
 
 
@@ -114,5 +114,4 @@ class QuestionData(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     value = models.TextField(null=True, blank=True)
     category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
-    data = models.ForeignKey(Data, on_delete=models.SET_NULL, null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_data_set')
