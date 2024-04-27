@@ -44,9 +44,9 @@ class ListSubmissionView(ListCreateAPIView):
         return Submission.objects.filter(user=self.request.user)
 
     def post(self, *args, **kwargs):
-        success_ids, error_file_names = upload_files(self.request)
+        success_ids, error_file_names, submission_id = upload_files(self.request)
 
-        return Response({'success_submission_ids': success_ids, 'error_file_name': error_file_names})
+        return Response({'submission_ids': submission_id, 'error_file_name': error_file_names, 'file_ids': success_ids})
 
 
 class GenerateQuestionView(GenericAPIView):

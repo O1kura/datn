@@ -48,6 +48,6 @@ def upload_files(request):
             data = Data(normalized_value=data['text'], last_ocr_value=data['text'], box=data['box'], symbol_box=data['symbol_text'], file=f)
             data.save()
 
-        success_ids.append(f.submission_id)
+        success_ids.append(f.id)
 
-    return success_ids, error_file_names
+    return success_ids, error_file_names, submission.id
