@@ -66,8 +66,7 @@ class GenerateQuestionView(GenericAPIView):
         random_data = random.sample(list(data), 4)
         ran = random.randint(0, 3)
         ans = random_data[ran]
-        question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question,
-                                  data=ans)
+        question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question)
         question_a.save()
 
         uppercase_letters = list(string.ascii_uppercase)
@@ -89,12 +88,11 @@ class GenerateQuestionView(GenericAPIView):
 
             if data == ans:
                 q = generate_question(symbol)
-                question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question, data=ans)
+                question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question)
                 question_q.save()
             else:
                 question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value,
-                                          question=question,
-                                          data=ans)
+                                          question=question)
                 question_c.save()
 
         watermark_img = Image.open(watermark_img_path)
