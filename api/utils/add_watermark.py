@@ -1,7 +1,7 @@
 from PIL import Image
 
 
-def add_watermark(img: Image, watermark: Image, position=(0, 0), opacity=0.5) -> Image:
+def add_watermark(img: Image, watermark: Image, position=(10, 10), opacity=0.5) -> Image:
   """
   Adds a watermark image to the input image with adjustable opacity.
 
