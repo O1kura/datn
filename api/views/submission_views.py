@@ -25,6 +25,7 @@ from api.serializers.data_serializer import DataSerializer
 from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer, \
     FileDetailSerializer
 from api.utils.add_watermark import add_watermark
+from api.utils.text_extract2 import convertOpenCVImagetoPIL, convertPILtoOpenCVImage
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
 from api.utils.utils import save_file, generate_question, update_tags, try_parse_datetime
@@ -95,10 +96,11 @@ class GenerateQuestionView(GenericAPIView):
                                           question=question)
                 question_c.save()
 
+        img = convertOpenCVImagetoPIL(img)
         watermark_img = Image.open(watermark_img_path)
         img = add_watermark(img, watermark_img)
 
-        is_success, buffer = cv2.imencode("." + file.extension, img)
+        is_success, buffer = cv2.imencode("." + file.extension, convertPILtoOpenCVImage(img))
         io_buf = BytesIO(buffer)
         io_buf.name = 'temp.' + file.extension
         img_path = save_file('question', io_buf)
