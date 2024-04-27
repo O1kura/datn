@@ -20,6 +20,7 @@ def convertPILtoOpenCVImage(image):
 
 
 def convertOpenCVImagetoPIL(img):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return Image.fromarray(img)
 
 
