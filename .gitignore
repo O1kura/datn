@@ -1,4 +1,4 @@
-images
+#images
 config.py
 db.sqlite3
 .idea
@@ -14,5 +14,4 @@ bvdata
 .coverage
 sub_function
 .vscode
-images
 fake_response.json
