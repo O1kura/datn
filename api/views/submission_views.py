@@ -24,9 +24,11 @@ from api.models.tag import Tag
 from api.serializers.data_serializer import DataSerializer
 from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer, \
     FileDetailSerializer
+from api.utils.add_watermark import add_watermark
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
 from api.utils.utils import save_file, generate_question, update_tags, try_parse_datetime
+from config import watermark_img_path
 from datn.settings import MEDIA_ROOT
 
 
@@ -94,6 +96,9 @@ class GenerateQuestionView(GenericAPIView):
                                           question=question,
                                           data=ans)
                 question_c.save()
+
+        watermark_img = Image.open(watermark_img_path)
+        img = add_watermark(img, watermark_img)
 
         is_success, buffer = cv2.imencode("." + file.extension, img)
         io_buf = BytesIO(buffer)
