@@ -30,7 +30,7 @@ class UnauthorizedUploadView(GenericAPIView):
             img = convertOpenCVImagetoPIL(res2)
 
             watermark_img_path = os.path.join(BASE_DIR,
-                                              'static/images/watermark.png')  # Replace BASE_DIR with your project's base directory path
+                                              'static/watermark/watermark.png')  # Replace BASE_DIR with your project's base directory path
             watermark_img = Image.open(watermark_img_path)
             img = add_watermark(img, watermark_img)
             image = get_file_content(img)
