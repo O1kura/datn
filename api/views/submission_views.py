@@ -28,7 +28,7 @@ from api.utils.add_watermark import add_watermark
 from api.utils.text_extract2 import convertOpenCVImagetoPIL, convertPILtoOpenCVImage
 from api.utils.text_extraction import text_line_extraction
 from api.utils.upload_utils import upload_files
-from api.utils.utils import save_file, generate_question, update_tags, try_parse_datetime
+from api.utils.utils import save_file, generate_question, update_tags, try_parse_datetime, replace_vietnamese
 from config import watermark_img_path
 from datn.settings import MEDIA_ROOT
 
@@ -60,11 +60,34 @@ class GenerateQuestionView(GenericAPIView):
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
         img = cv2.imread(file.path)
-        question = Question(file=file, display_name=file.display_name)
+        question = Question(file=file, display_name=file.display_name, user=file.submission.user)
         question.save()
+        question.tags.set(file.tags.all())
 
+        # Get random 4 data from its data_set
         data = file.data_set.filter(deleted_at__isnull=True).all()
         random_data = random.sample(list(data), 4)
+
+        list_value = []
+        duplicate_idx = []
+
+        # Get the unique when format value
+        for idx, item in enumerate(random_data):
+            if item.normalized_value not in list_value:
+                list_value.append(replace_vietnamese(item.normalized_value))
+            else:
+                duplicate_idx.append(idx)
+                
+        # Change the duplicate value data from index to another one
+        for data_index in duplicate_idx:
+            unique_data_set = [x for x in data if replace_vietnamese(x.normalized_value) not in list_value]
+            if len(unique_data_set) == 0:
+                random_data.pop(data_index)
+                continue
+            random_index = random.randint(0, len(unique_data_set) - 1)
+            random_data[data_index] = unique_data_set[random_index]
+            list_value.append(random_data[data_index].normalized_value)
+
         ran = random.randint(0, 3)
         ans = random_data[ran]
         question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question)

@@ -25,29 +25,31 @@ def upload_files(request):
     if len(files):
         submission = Submission(user=request.user, file_count=len(files))
         submission.save()
-    for file in files:
-        file_names = file.name.split('.')
-        ext = file_names[-1].lower()
+        for file in files:
+            file_names = file.name.split('.')
+            ext = file_names[-1].lower()
 
-        try:
-            image = Image.open(file)
-        except:
-            error_file_names.append(file.name)
-            continue
+            try:
+                image = Image.open(file)
+            except:
+                error_file_names.append(file.name)
+                continue
 
-        path = save_file('origin', file)
-        f = File(name=file.name, display_name=file.name, extension=ext, path=path, size=file.size, submission=submission)
-        f.save()
+            path = save_file('origin', file)
+            f = File(name=file.name, display_name=file.name, extension=ext, path=path, size=file.size, submission=submission)
+            f.save()
 
-        open_cv_image = convertPILtoOpenCVImage(image)
+            open_cv_image = convertPILtoOpenCVImage(image)
 
-        # res = text_line_extraction(open_cv_image)
-        res = text_line_extraction_2(open_cv_image)
+            # res = text_line_extraction(open_cv_image)
+            res = text_line_extraction_2(open_cv_image)
 
-        for data in res:
-            data = Data(normalized_value=data['text'], last_ocr_value=data['text'], box=data['box'], symbol_box=data['symbol_text'], file=f)
-            data.save()
+            for data in res:
+                data = Data(normalized_value=data['text'], last_ocr_value=data['text'], box=data['box'], symbol_box=data['symbol_text'], file=f)
+                data.save()
 
-        success_ids.append(f.id)
+            success_ids.append(f.id)
 
-    return success_ids, error_file_names, submission.id
+        return success_ids, error_file_names, submission.id
+
+    return success_ids, error_file_names, None

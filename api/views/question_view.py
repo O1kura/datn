@@ -29,7 +29,7 @@ class QuestionView(ListAPIView):
         start = try_parse_datetime(start)
         end = try_parse_datetime(end)
 
-        question = Question.objects.filter(file__submission__user=user)
+        question = Question.objects.filter(user=user)
         if display_name:
             question = question.filter(display_name__contains=display_name)
         if start:

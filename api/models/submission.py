@@ -89,6 +89,7 @@ class Question(models.Model):
     path = models.CharField(max_length=512, null=True, blank=True)
     display_name = models.CharField(max_length=127, null=True, blank=True)
     tags = models.ManyToManyField(Tag)
+    user = models.ForeignKey(AUTH_USER_MODEL, default=None, on_delete=models.CASCADE, related_name='question_set')
 
     def get_content_image(self):
         image_path = self.path

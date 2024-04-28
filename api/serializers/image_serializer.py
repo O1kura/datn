@@ -22,7 +22,7 @@ class ListSubmissionSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        exclude = ['path', 'deleted_at']
+        exclude = ['path', 'deleted_at', 'user']
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -75,7 +75,14 @@ class FileDetailSerializer(serializers.ModelSerializer):
         data_set = instance.data_set.filter(deleted_at__isnull=True)
         res = DataSerializer(instance=data_set, many=True).data
         rep['data_Set'] = res
-
+        question_set = instance.question_set.all()
+        list_question = []
+        for question in question_set:
+            list_question.append({
+                'question_id': question.id,
+                'question_name': question.display_name
+            })
+        rep['questions'] = list_question
         rep['tags'] = [str(tag) for tag in instance.tags.all()]
 
         return rep
