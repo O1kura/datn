@@ -8,3 +8,8 @@ class Tag(models.Model):
 
     def __str__(self):
         return "#" + str(self.tag_name)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['tag_name'])
+        ]

@@ -77,7 +77,7 @@ class GenerateQuestionView(GenericAPIView):
                 list_value.append(replace_vietnamese(item.normalized_value))
             else:
                 duplicate_idx.append(idx)
-                
+
         # Change the duplicate value data from index to another one
         for data_index in duplicate_idx:
             unique_data_set = [x for x in data if replace_vietnamese(x.normalized_value) not in list_value]

@@ -19,3 +19,7 @@ class User(AbstractUser):
 
     class Meta:
         db_table = 'auth_user'
+        indexes = [
+            models.Index(fields=['email', 'name'])
+        ]
+

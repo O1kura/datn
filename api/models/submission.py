@@ -79,6 +79,9 @@ class Data(models.Model):
     symbol_box = models.JSONField(null=True, blank=True)
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='data_set')
 
+    class Meta:
+        db_table = 'data'
+
 
 class Question(models.Model):
     id = models.AutoField(primary_key=True)
@@ -100,6 +103,12 @@ class Question(models.Model):
                 image_file = f.read()
         return image_file
 
+    class Meta:
+        db_table = "question"
+        indexes = [
+            models.Index(fields=['display_name'])
+        ]
+
 
 @receiver(models.signals.pre_delete, sender=Question)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
@@ -116,3 +125,6 @@ class QuestionData(models.Model):
     value = models.TextField(null=True, blank=True)
     category = models.CharField(max_length=27, choices=Category.choices(), default=Category.cau_tra_loi.value)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_data_set')
+
+    class Meta:
+        db_table = 'question_data'
