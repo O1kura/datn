@@ -10,7 +10,7 @@ from api.middlewares.custome_middleware import CustomException
 from api.models.submission import Question, Category, QuestionData
 from api.models.tag import Tag
 from api.serializers.data_serializer import QuestionDataSerializer
-from api.serializers.image_serializer import QuestionSerializer, QuestionWithImageSerializer
+from api.serializers.file_serializer import QuestionSerializer, QuestionWithImageSerializer
 from api.utils.utils import update_tags, try_parse_datetime
 
 

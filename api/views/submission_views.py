@@ -22,7 +22,7 @@ from api.middlewares.custome_middleware import CustomException
 from api.models.submission import Submission, File, Question, QuestionData, Category, Data
 from api.models.tag import Tag
 from api.serializers.data_serializer import DataSerializer
-from api.serializers.image_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer, \
+from api.serializers.file_serializer import ListSubmissionSerializer, QuestionSerializer, FileSerializer, \
     FileDetailSerializer
 from api.utils.add_watermark import add_watermark
 from api.utils.text_extract2 import convertOpenCVImagetoPIL, convertPILtoOpenCVImage

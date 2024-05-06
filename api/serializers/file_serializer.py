@@ -8,15 +8,16 @@ from api.models.submission import Submission, Question, File, Category
 from api.serializers.data_serializer import QuestionDataSerializer, DataSerializer
 
 
-class ImageSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField()
-
-
 class ListSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
         fields = '__all__'
         # exclude = ['init_data']
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['files'] = [x.id for x in instance.file_set.all()]
+        return rep
 
 
 class QuestionSerializer(serializers.ModelSerializer):

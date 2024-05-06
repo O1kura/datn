@@ -1,17 +1,26 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
 
-from api.views import rbac_views, user_views, upload_view, submission_views, question_view
+from api.views import rbac_views, user_views, upload_view, submission_views, question_view, admin_view
+
+
+router = DefaultRouter()
+router.register(r'users', admin_view.AdminUserView, basename='user')
+router.register(r'files', admin_view.AdminFileView, basename='file')
+router.register(r'datas', admin_view.AdminDataView, basename='data')
+router.register(r'questions', admin_view.AdminQuestionView, basename='question')
+router.register(r'question_datas', admin_view.AdminQuestionDataView, basename='question_data')
 
 urlpatterns = [
+    path('manage/', include(router.urls)),
     path('login', rbac_views.LoginView.as_view()),
     path('logout', rbac_views.LogoutView.as_view()),
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('user', user_views.UserView.as_view()),
     path('me', user_views.CurrentUserView.as_view()),
     path('me/change_password', user_views.ChangePassword.as_view()),
     path('extract', upload_view.UnauthorizedUploadView.as_view()),

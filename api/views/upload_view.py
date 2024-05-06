@@ -10,7 +10,6 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
-from api.serializers.image_serializer import ImageSerializer
 from api.utils.add_watermark import add_watermark
 from api.utils.text_extract2 import text_extraction, convertPILtoOpenCVImage, convertOpenCVImagetoPIL, text_extract_3
 from api.utils.text_extraction import text_line_extraction, get_file_content, text_line_extraction_2

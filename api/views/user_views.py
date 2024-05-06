@@ -10,15 +10,6 @@ from api.serializers.user_serializer import UserSerializer
 from rest_framework.response import Response
 
 
-class UserView(GenericAPIView):
-    permission_classes = [permissions.IsAdminUser]
-
-    def get(self, request):
-        users = User.objects.all()
-        data = UserSerializer(instance=users, many=True).data
-        return Response(data=data)
-
-
 class ChangePassword(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
