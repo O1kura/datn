@@ -157,6 +157,7 @@ def text_line_extraction_2(image, get_image=False):
     # bw = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
     # Extract only using pytesseract
+    print(pytesseract.image_to_data(gray))
     results = pytesseract.image_to_data(gray, output_type='dict')
 
     # block_words_count = {}
@@ -191,7 +192,7 @@ def text_line_extraction_2(image, get_image=False):
         conf = int(results["conf"][i])
         # filter out weak confidence text localizations
         # combine text from block_text to a string and get the bounds of that block_text
-        if conf > 66 and check_string(text):
+        if conf > 66:
             # if block_words_count[block_num] > 6:
             #     true_text.append({'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h})
             #     continue
@@ -200,7 +201,7 @@ def text_line_extraction_2(image, get_image=False):
                     dict_res[block_num]['text'])
                 avg_text_height = (dict_res[block_num]['rect_y'] - dict_res[block_num]['y']) / dict_res[block_num]['line']
 
-                if (x - dict_res[block_num]["rect_x"] > 3 * avg_text_width
+                if (x - dict_res[block_num]["rect_x"] > 1.6 * avg_text_width
                     # or abs(x - dict_res[block_num]["x"]) > 3 * avg_text_width
                         or y + h - dict_res[block_num]["rect_y"] > 1.6 * avg_text_height):
                     true_text.append(dict_res[block_num])
@@ -223,42 +224,44 @@ def text_line_extraction_2(image, get_image=False):
     # for formatting response data and write to image if necessary
     padding = 1
     for block_text in true_text:
-        word_count = len(block_text["text"].split())
-        if word_count > 7:
-            for i in block_text['component']:
-                x = results["left"][i]
-                y = results["top"][i]
-                w = results["width"][i]
-                h = results["height"][i]
-                text = results["text"][i]
-                _block_text = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h}
-                dict = format_box_text_to_dict(_block_text, 1)
-                result.append(dict)
+        if check_string(block_text["text"]):
+            word_count = len(block_text["text"].split())
+            if word_count > 7:
+                for i in block_text['component']:
+                    x = results["left"][i]
+                    y = results["top"][i]
+                    w = results["width"][i]
+                    h = results["height"][i]
+                    text = results["text"][i]
+                    if check_string(text):
+                        _block_text = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h}
+                        dict = format_box_text_to_dict(_block_text, 1)
+                        result.append(dict)
 
-                # Draw rectangle around each line, thickness=-1 -> filled rectangle
-                cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
-                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        # Draw rectangle around each line, thickness=-1 -> filled rectangle
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
+                        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-                if get_image:
-                    cv2.putText(image, dict["symbol"], (dict["text_x"], dict["text_y"]),
-                                dict['symbol_text']["text_font"], dict['scale'], dict['symbol_text']["color"],
-                                dict['thickness'])
-            continue
-        x = block_text['x'] - padding
-        y = block_text['y'] - padding
-        w = block_text['rect_x'] - x + padding
-        h = block_text['rect_y'] - y + padding
-        # Draw rectangle around each line, thickness=-1 -> filled rectangle
-        cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                        if get_image:
+                            cv2.putText(image, dict["symbol"], (dict["text_x"], dict["text_y"]),
+                                        dict['symbol_text']["text_font"], dict['scale'], dict['symbol_text']["color"],
+                                        dict['thickness'])
+                continue
+            x = block_text['x'] - padding
+            y = block_text['y'] - padding
+            w = block_text['rect_x'] - x + padding
+            h = block_text['rect_y'] - y + padding
+            # Draw rectangle around each line, thickness=-1 -> filled rectangle
+            cv2.rectangle(image, (x, y), (x + w, y + h), (255, 255, 255), -1)
+            cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-        # Tính toán vị trí để viết chữ vào giữa hình chữ nhật
-        dict = format_box_text_to_dict(block_text, 1)
-        result.append(dict)
+            # Tính toán vị trí để viết chữ vào giữa hình chữ nhật
+            dict = format_box_text_to_dict(block_text, 1)
+            result.append(dict)
 
-        # Viết chữ vào chính giữa hình chữ nhật
-        if get_image:
-            cv2.putText(image, dict["symbol"], (dict["text_x"], dict["text_y"]), dict['symbol_text']["text_font"], dict['scale'], dict['symbol_text']["color"], dict['thickness'])
+            # Viết chữ vào chính giữa hình chữ nhật
+            if get_image:
+                cv2.putText(image, dict["symbol"], (dict["text_x"], dict["text_y"]), dict['symbol_text']["text_font"], dict['scale'], dict['symbol_text']["color"], dict['thickness'])
 
     if get_image:
         return result, image

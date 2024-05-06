@@ -27,6 +27,7 @@ class UnauthorizedUploadView(GenericAPIView):
 
             res, res2 = text_line_extraction_2(open_cv_image, get_image=True)
             # res2 = text_extraction(open_cv_image)
+            list = [x['text'] for x in res]
             img = convertOpenCVImagetoPIL(res2)
 
             watermark_img = Image.open(watermark_img_path)
