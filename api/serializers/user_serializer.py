@@ -22,6 +22,7 @@ class AdminUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ['password']
+        read_only_fields = ('email', 'username')
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
