@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'django_rest_passwordreset',
     'django_filters',
 ]
 
@@ -63,7 +64,7 @@ ROOT_URLCONF = "datn.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": ['templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -179,3 +180,11 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_LIFETIME': datetime.timedelta(days=100),
     'SLIDING_TOKEN_REFRESH_LIFETIME': datetime.timedelta(days=300),
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = mail_port
+EMAIL_USE_SSL = mail_use_ssl
+EMAIL_USE_TLS = mail_use_tls
+EMAIL_HOST_USER = mail_username
+EMAIL_HOST_PASSWORD = mail_password

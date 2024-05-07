@@ -4,6 +4,10 @@ from api.models import User
 from api.serializers.file_serializer import ListSubmissionSerializer
 
 
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -13,6 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
+    email = EmailSerializer
+
     class Meta:
         model = User
         exclude = ['password']

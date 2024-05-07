@@ -23,9 +23,13 @@ urlpatterns = [
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('me', user_views.CurrentUserView.as_view()),
     path('me/change_password', user_views.ChangePassword.as_view()),
+    path('password-reset', rbac_views.ResetPasswordRequestToken.as_view()),
+    path('password-reset-confirm', rbac_views.ResetPasswordConfirm.as_view()),
+    path('register', rbac_views.RegisterView.as_view()),
+
     path('extract', upload_view.UnauthorizedUploadView.as_view()),
     path('submissions', submission_views.ListSubmissionView.as_view()),
-    path('register', rbac_views.RegisterView.as_view()),
+
     # File and file data
     path('file', submission_views.ListFilesView.as_view()),
     path('file/<int:file_id>', submission_views.FileDetailView.as_view()),
