@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_rest_passwordreset',
     'django_filters',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "datn.urls"
@@ -195,3 +197,5 @@ EMAIL_USE_SSL = mail_use_ssl
 EMAIL_USE_TLS = mail_use_tls
 EMAIL_HOST_USER = mail_username
 EMAIL_HOST_PASSWORD = mail_password
+
+CORS_ALLOW_ALL_ORIGINS = True
