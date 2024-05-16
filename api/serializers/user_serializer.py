@@ -1,3 +1,4 @@
+from django.db.models import Sum, Count
 from rest_framework import serializers
 
 from api.models import User
@@ -26,5 +27,14 @@ class AdminUserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
+        rep['submissions_count'] = len(instance.submission_set.all())
+        rep['total_file_sent'] = instance.submission_set.aggregate(total_file_sent=Sum('file_count'))['total_file_sent']
+
+        total_file_count = 0
+        for submision in instance.submission_set.all():
+            total_file_count = total_file_count + submision.file_set.aggregate(total_file_count=Count('id'))['total_file_count']
+
+        rep['total_file_count'] = total_file_count
         rep['submissions'] = ListSubmissionSerializer(instance=instance.submission_set.all(), many=True).data
+
         return rep

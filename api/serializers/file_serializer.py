@@ -1,6 +1,7 @@
 import base64
 from abc import ABC
 
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.serializers import BaseSerializer
 
@@ -47,6 +48,9 @@ class QuestionSerializer(serializers.ModelSerializer):
         rep['question_data'] = QuestionDataSerializer(instance=question_data, many=True).data
 
         rep['tags'] = [str(tag) for tag in instance.tags.all()]
+
+        ratings = instance.rating_set.aggregate(avg_rating=Avg('rating'))
+        rep['rating'] = ratings['avg_rating']
 
         return rep
 
