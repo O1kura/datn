@@ -59,6 +59,8 @@ class UserProfileImageView(GenericAPIView):
         user = request.user
         if user.profile_path is not None and os.path.exists(user.profile_path):
             os.remove(user.profile_path)
+        if user.thumb_profile_path is not None and os.path.exists(user.profile_path):
+            os.remove(user.thumb_profile_path)
 
         save_profile_image('profile', file, user=user)
         serializer = UserSerializer(instance=user)
