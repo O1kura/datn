@@ -22,6 +22,8 @@ urlpatterns = [
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('me', user_views.CurrentUserView.as_view()),
+    path('me/profile-img', user_views.UserProfileImageView.as_view()),
+    path('users/<uuid:user_id>/profile-img', user_views.GetUserProfileImageView.as_view()),
     path('me/change_password', user_views.ChangePassword.as_view()),
     path('password-reset', rbac_views.ResetPasswordRequestToken.as_view()),
     path('password-reset-confirm', rbac_views.ResetPasswordConfirm.as_view()),

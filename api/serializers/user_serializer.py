@@ -12,7 +12,7 @@ class EmailSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ['password']
+        exclude = ['password', 'thumb_profile_path', 'profile_path']
         read_only_fields = ('email', 'username', 'is_superuser', 'date_joined', 'last_login', 'is_staff', 'is_active',
                             'groups', 'deleted_at')
 

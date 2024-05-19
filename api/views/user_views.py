@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.contrib.auth import update_session_auth_hash
 from rest_framework.generics import GenericAPIView
@@ -8,6 +9,8 @@ from api.middlewares.custome_middleware import CustomException
 from api.models import User
 from api.serializers.user_serializer import UserSerializer
 from rest_framework.response import Response
+
+from api.utils.utils import save_profile_image, str_to_bool
 
 
 class ChangePassword(GenericAPIView):
@@ -46,3 +49,46 @@ class CurrentUserView(GenericAPIView):
 
         data = user_serializer.data
         return Response(data)
+
+
+class UserProfileImageView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        file = request.FILES.get('file')
+        user = request.user
+        if user.profile_path is not None and os.path.exists(user.profile_path):
+            os.remove(user.profile_path)
+
+        save_profile_image('profile', file, user=user)
+        serializer = UserSerializer(instance=user)
+        return Response(serializer.data)
+
+    def get(self, request):
+        get_thumb = request.GET.get('get_thumb', 'true')
+        get_thumb = str_to_bool(get_thumb)
+        user = request.user
+
+        if get_thumb:
+            if user.thumb_profile_path is not None:
+                return user.get_thumb_photo()
+            else:
+                return Response({'image': None})
+
+        if user.profile_path is not None:
+            return user.get_photo()
+
+        return Response({'image': None})
+
+
+class GetUserProfileImageView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+        user = User.objects.filter(id=user_id).first()
+        if user is None:
+            raise CustomException('does_not_exists', label='user')
+        if user.deleted_at is not None or user.thumb_profile_path is None:
+            return Response({'image': None})
+
+        return user.get_thumb_photo()

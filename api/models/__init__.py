@@ -1,7 +1,11 @@
 # users/models.py
+import mimetypes
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.http import HttpResponse
+
+from api.utils.utils import get_path
 
 
 class User(AbstractUser):
@@ -23,3 +27,16 @@ class User(AbstractUser):
             models.Index(fields=['email', 'name'])
         ]
 
+    def get_photo(self):
+        real_path = get_path(self.profile_path)
+        img_mimetypes = mimetypes.guess_type(real_path)[0]
+        with open(real_path, "rb") as f:
+            image_file = f.read()
+        return HttpResponse(image_file, content_type=img_mimetypes)
+
+    def get_thumb_photo(self):
+        real_path = get_path(self.thumb_profile_path)
+        img_mimetypes = mimetypes.guess_type(real_path)[0]
+        with open(real_path, "rb") as f:
+            image_file = f.read()
+        return HttpResponse(image_file, content_type=img_mimetypes)

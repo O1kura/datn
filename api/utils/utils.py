@@ -1,12 +1,24 @@
+import pathlib
 from datetime import datetime
 import os
 import uuid
 import re
+
+from PIL import Image
 from django.core.files.storage import default_storage
 
 from api.models.tag import Tag
 from api.models.token import SlidingToken
+from config import thumb_size, thumbs_dir
 from datn.settings import MEDIA_ROOT
+
+
+def str_to_bool(_str):
+    _str = _str.strip().lower()
+    if _str == 'true':
+        return True
+    else:
+        return False
 
 
 def get_client_ip(request):
@@ -97,3 +109,33 @@ def replace_vietnamese(value: str):
                value.replace('\n', '').replace('\t', '').replace(' ', '').strip().lower()))
 
     return new_value
+
+
+def save_profile_image(profile_img_dir, file, user=None, org=None):
+    path = save_file(profile_img_dir, file)
+    image = Image.open(path)
+    image.thumbnail((thumb_size, thumb_size))
+    ext = file.content_type.split('/')[-1]
+
+    thumb_dir = os.path.join(MEDIA_ROOT, profile_img_dir, thumbs_dir)
+    if not os.path.exists(thumb_dir):
+        os.makedirs(thumb_dir)
+
+    thumb_path = os.path.join(thumb_dir, 'thumb_' + str(uuid.uuid4()) + '.' + ext)
+    image.save(thumb_path)
+
+    if user is not None:
+        user.profile_path = path
+        user.thumb_profile_path = thumb_path
+        user.save()
+
+
+def get_path(path):
+    if path is not None:
+        if MEDIA_ROOT not in path:
+            parts = pathlib.Path(path).parts
+            path_split = [MEDIA_ROOT]
+            path_split.extend(parts[1:])
+            path = '/'.join(path_split)
+
+    return path

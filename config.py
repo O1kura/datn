@@ -10,3 +10,5 @@ mail_password = 'tioj goil gxrr xbjr'
 mail_port = 587
 mail_use_ssl = False
 mail_use_tls = True
+thumb_size = 1920
+thumbs_dir = 'thumbnails'
