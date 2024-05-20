@@ -5,7 +5,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from api.views import rbac_views, user_views, upload_view, submission_views, question_view, admin_view, dashboard_views
+from api.views import rbac_views, user_views, upload_view, submission_views, question_view, admin_view,\
+    dashboard_views, post_views
 
 
 router = DefaultRouter()
@@ -48,7 +49,14 @@ urlpatterns = [
     path('question/<int:question_id>/<int:question_data_id>', question_view.QuestionDataView.as_view()),
     path('question/<int:question_id>/add', question_view.AddQuestionDataView.as_view()),
     path('question/<int:question_id>/rating', question_view.QUestionRatingView.as_view()),
+    path('question/<int:question_id>/share', question_view.QuestionShareView.as_view()),
 
     # Dashboard
     path('dashboard/submission_by_month', dashboard_views.SubmissionByMonthView.as_view()),
+
+    # Post, comment
+    path('posts', post_views.ListPostView.as_view()),
+    path('posts/<int:post_id>', post_views.PostDetailView.as_view()),
+    path('posts/<int:post_id>/image', post_views.PostImageView.as_view()),
+    path('posts/<int:post_id>/like', post_views.LikePostView.as_view()),
 ]

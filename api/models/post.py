@@ -1,4 +1,7 @@
+import mimetypes
+
 from django.db import models
+from django.http import HttpResponse
 
 from api.models import User
 from api.models.submission import Question
@@ -6,8 +9,8 @@ from api.models.tag import Tag
 
 
 class FollowersCount(models.Model):
-    follower = models.ForeignKey(User, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower_set')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followed_set')
 
 
 class Post(models.Model):
@@ -21,6 +24,16 @@ class Post(models.Model):
     img_path = models.CharField(max_length=512, null=True, blank=True)
     tags = models.ManyToManyField(Tag)
     no_of_likes = models.IntegerField(default=0)
+
+    def get_content_image(self):
+        image_path = self.img_path
+        if image_path is None:
+            return False
+        else:
+            with open(image_path, "rb") as f:
+                image_file = f.read()
+        img_mimetypes = mimetypes.guess_type(image_path)[0]
+        return HttpResponse(image_file, content_type=img_mimetypes)
 
 
 class Comment(models.Model):

@@ -142,7 +142,7 @@ class ListFilesView(GenericAPIView):
 
         params = request.query_params
         display_name = params.get('display_name', None)
-        tags = params.get('tags', None)
+        tags = params.getlist('tags', None)
         start = params.get('from', None)
         end = params.get('to', None)
 

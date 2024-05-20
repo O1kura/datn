@@ -2,16 +2,19 @@ import json
 
 from django.db.models import Count, F
 from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
+from api.models.post import Post
 from api.models.rating import Rating
 from api.models.submission import Question, Category, QuestionData
 from api.models.tag import Tag
 from api.serializers.data_serializer import QuestionDataSerializer
 from api.serializers.file_serializer import QuestionSerializer, QuestionWithImageSerializer
+from api.serializers.post_serializers import PostSerializer
 from api.serializers.rating_serializers import RatingSerializer
 from api.utils.utils import update_tags, try_parse_datetime
 
@@ -24,7 +27,7 @@ class QuestionView(ListAPIView):
         user = self.request.user
         params = self.request.query_params
         display_name = params.get('display_name', None)
-        tags = params.get('tags', None)
+        tags = params.getlist('tags', None)
         start = params.get('from', None)
         end = params.get('to', None)
 
@@ -249,5 +252,29 @@ class QUestionRatingView(GenericAPIView):
         serializer = RatingSerializer(instance=rating, data=data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        return Response(serializer.data)
+
+
+class QuestionShareView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, question_id):
+        question = Question.objects.filter(id=question_id).first()
+        if question is None:
+            raise CustomException('model_not_found', 'No question found')
+
+        # if question.user != request.user:
+            # raise CustomException('permission_denied', 'Not your questions')
+
+        data = json.loads(request.body)
+        caption = data.get('caption', '')
+        title = data.get('title', '')
+        post = Post(question=question, author=request.user, caption=caption, img_path=question.path, created_at=timezone.now(), title=title)
+        post.save()
+        post.tags.set(question.tags.all())
+        post.save()
+
+        serializer = PostSerializer(instance=post)
 
         return Response(serializer.data)
