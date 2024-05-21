@@ -42,7 +42,7 @@ class ListSubmissionView(ListCreateAPIView):
     #
     def get_queryset(self):
         # return list_submissions(self)
-        return Submission.objects.filter(user=self.request.user)
+        return Submission.objects.filter(user=self.request.user).order_by('-created_at')
 
     def post(self, *args, **kwargs):
         success_ids, error_file_names, submission_id = upload_files(self.request)
@@ -159,7 +159,7 @@ class ListFilesView(GenericAPIView):
             if not isinstance(tags, list):
                 tags = [tags]
             files = files.filter(tags__tag_name__in=tags)
-        data = FileSerializer(instance=files, many=True).data
+        data = FileSerializer(instance=files.order_by('-created_at'), many=True).data
         return Response(data)
 
 

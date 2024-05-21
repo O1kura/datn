@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.http import HttpResponse
 from rest_framework.generics import ListAPIView, GenericAPIView
@@ -6,9 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
-from api.models.post import Post, LikePost
+from api.models import User
+from api.models.post import Post, LikePost, FollowersCount
 from api.serializers.post_serializers import PostSerializer
-from api.utils.utils import try_parse_datetime, update_tags
+from api.utils.utils import try_parse_datetime, update_tags, save_file
 
 
 class ListPostView(ListAPIView):
@@ -37,7 +39,7 @@ class ListPostView(ListAPIView):
                 tags = [tags]
             post = post.filter(tags__tag_name__in=tags)
 
-        return post
+        return post.order_by('-created_at')
 
 
 class PostDetailView(GenericAPIView):
@@ -60,19 +62,27 @@ class PostDetailView(GenericAPIView):
             raise CustomException('permission_denied', 'Not your posts')
 
         data = json.loads(request.body)
-        display_name = data.get('display_name', None)
-        tags = data.get('tags', [])
+        file = request.FILES.get('file')
+        if file:
+            if post.img_path is not None and os.path.exists(post.img_path) and post.question:
+                os.remove(post.img_path)
+            path = save_file('posts', file)
+            post.img_path = path
+
+        tags = data.get('tags', None)
+        del data['tags']
 
         if isinstance(tags, list):
             tags_model = update_tags(tags)
             post.tags.set(tags_model)
 
-        if display_name:
-            post.display_name = display_name
-            post.save()
+        post.save()
 
-        res = PostSerializer(instance=post).data
-        return Response(res)
+        serializer = PostSerializer(instance=post, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
 
     def delete(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
@@ -95,6 +105,24 @@ class PostImageView(GenericAPIView):
             raise CustomException('model_not_found', 'No post found')
 
         return post.get_content_image()
+
+    def put(self, request, post_id):
+        post = Post.objects.filter(id=post_id).first()
+        if post is None:
+            raise CustomException('model_not_found', 'No post found')
+
+        if post.author != request.user:
+            raise CustomException('permission_denied', 'Not your posts')
+
+        file = request.FILES.get('file')
+        if file:
+            if post.img_path is not None and os.path.exists(post.img_path) and not post.question:
+                os.remove(post.img_path)
+            path = save_file('posts', file)
+            post.img_path = path
+            post.save()
+
+        return Response({"status": "ok"})
 
 
 class LikePostView(GenericAPIView):
@@ -121,3 +149,23 @@ class LikePostView(GenericAPIView):
 
         data = PostSerializer(instance=post).data
         return Response(data)
+
+
+class FollowUserView(GenericAPIView):
+    def post(self, request, user_id):
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            raise CustomException("does_not_found", label='user')
+        follower = request.user
+        if follower == user:
+            raise CustomException("follow_conflict", message="Cant follow yourself")
+        follower_count_obj = FollowersCount.objects.filter(follower=follower, user=user).first()
+        if follower_count_obj:
+            follower_count_obj.delete()
+            action = 'unfollow'
+        else:
+            new_follower = FollowersCount.objects.create(follower=follower, user=user)
+            new_follower.save()
+            action = 'follow'
+
+        return Response({'action': action})

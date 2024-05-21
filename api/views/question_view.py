@@ -46,7 +46,7 @@ class QuestionView(ListAPIView):
                 tags = [tags]
             question = question.filter(tags__tag_name__in=tags)
 
-        return question
+        return question.order_by('-created_at')
 
     # def get(self, request):
     #     user = request.user

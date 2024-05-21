@@ -113,7 +113,8 @@ class Question(models.Model):
 @receiver(models.signals.pre_delete, sender=Question)
 def auto_delete_file_on_delete(sender, instance, **kwargs):
     path = instance.path
-    if path and os.path.isfile(path):
+    post = instance.post_set.filter(img_path=path).first()
+    if path and os.path.isfile(path) and not post:
         os.remove(path)
 
 
