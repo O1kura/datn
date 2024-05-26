@@ -31,6 +31,7 @@ error_messages = {
     'delete_yourself': "Can not delete yourself",
     'can_not_delete_last_admin': "Can not delete last admin",
     'incorrect_pass': "Incorrect password",
+    'email_existed': 'Email already exists',
     'password_changed': "You've changed password",  # only 1 time for reset password
     'does_not_exists': "Object does not exist",
     'file_not_found': "File not found",

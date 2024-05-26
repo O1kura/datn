@@ -71,7 +71,7 @@ class RegisterView(GenericAPIView):
         if email is None:
             raise CustomException('missing_required_fields', 'Missing email field')
         if User.objects.filter(email=email).first():
-            raise CustomException('email_existed', 'Email already exists')
+            raise CustomException('email_existed')
         user = User.objects.create_user(username=username, password=password, email=email)
         user_serializer = UserSerializer(instance=user, data=data, partial=True)
         if user_serializer.is_valid(raise_exception=False):
