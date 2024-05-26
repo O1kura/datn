@@ -35,5 +35,5 @@ class UnauthorizedUploadView(GenericAPIView):
             image = get_file_content(img)
             return HttpResponse(image, content_type='image/jpeg')
 
-        raise CustomException('no image')
+        raise CustomException('image_not_found')
 # class

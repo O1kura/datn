@@ -48,7 +48,7 @@ class PostDetailView(GenericAPIView):
     def get(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', 'No post found')
+            raise CustomException('model_not_found', label='post')
 
         res = PostSerializer(instance=post).data
         return Response(res)
@@ -56,7 +56,7 @@ class PostDetailView(GenericAPIView):
     def put(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', 'No post found')
+            raise CustomException('model_not_found', label='post')
 
         if post.author != request.user:
             raise CustomException('permission_denied', 'Not your posts')
@@ -87,7 +87,7 @@ class PostDetailView(GenericAPIView):
     def delete(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', 'No post found')
+            raise CustomException('model_not_found', label='post')
 
         if post.author != request.user:
             raise CustomException('permission_denied', 'Not your posts')
@@ -102,14 +102,14 @@ class PostImageView(GenericAPIView):
     def get(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', 'No post found')
+            raise CustomException('model_not_found', label='post')
 
         return post.get_content_image()
 
     def put(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', 'No post found')
+            raise CustomException('model_not_found', label='post')
 
         if post.author != request.user:
             raise CustomException('permission_denied', 'Not your posts')

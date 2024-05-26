@@ -56,7 +56,7 @@ class GenerateQuestionView(GenericAPIView):
     def post(self, request, file_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
         img = cv2.imread(file.path)
@@ -169,7 +169,7 @@ class FileDetailView(GenericAPIView):
     def get(self, request, file_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
 
@@ -179,7 +179,7 @@ class FileDetailView(GenericAPIView):
     def delete(self, request, file_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
 
@@ -189,7 +189,7 @@ class FileDetailView(GenericAPIView):
     def put(self, request, file_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
 
@@ -214,7 +214,7 @@ class FileImageView(GenericAPIView):
     def get(self, request, file_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
 
@@ -228,12 +228,12 @@ class DataDetailView(GenericAPIView):
     def put(self, request, file_id, data_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
         data = file.data_set.filter(id=data_id, deleted_at__isnull=True).first()
         if not data:
-            raise CustomException('data_does_not_exits', 'Data not found')
+            raise CustomException('does_not_exists', label='data')
         body = json.loads(request.body)
         value = body.get('value', None)
         if value:
@@ -247,12 +247,12 @@ class DataDetailView(GenericAPIView):
     def delete(self, request, file_id, data_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
         data = file.data_set.filter(id=data_id).first()
         if not data:
-            raise CustomException('data_does_not_exits', 'Data not found')
+            raise CustomException('does_not_exists', label='data')
 
         data.deleted_at = timezone.now()
         data.save()
@@ -266,12 +266,12 @@ class RestoreDataDetailView(GenericAPIView):
     def put(self, request, file_id, data_id):
         file = File.objects.filter(id=file_id).first()
         if not file:
-            raise CustomException('file_does_not_exist', 'File not found')
+            raise CustomException('does_not_exists', label='file')
         if file.submission.user != request.user:
             raise CustomException('permission_denied', 'Not your file')
         data = file.data_set.filter(id=data_id).first()
         if not data:
-            raise CustomException('data_does_not_exits', 'Data not found')
+            raise CustomException('does_not_exists', label='data')
 
         data.normalized_value = data.last_ocr_value
         data.deleted_at = None

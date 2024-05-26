@@ -30,9 +30,9 @@ class LoginView(GenericAPIView):
         password = request.POST.get('password', None)
 
         if not username:
-            raise CustomException('No username')
+            raise CustomException('missing_required_fields', 'Missing username field')
         if not password:
-            raise CustomException('No username')
+            raise CustomException('missing_required_fields', 'Missing password field')
 
         user = authenticate(username=username, password=password)
 
@@ -69,7 +69,7 @@ class RegisterView(GenericAPIView):
         username = data.get('username', None)
         password = data.get('password', None)
         if email is None:
-            raise CustomException('missing_fields', 'Missing email field')
+            raise CustomException('missing_required_fields', 'Missing email field')
         if User.objects.filter(email=email).first():
             raise CustomException('email_existed', 'Email already exists')
         user = User.objects.create_user(username=username, password=password, email=email)
@@ -121,7 +121,7 @@ class ResetPasswordRequestToken(GenericAPIView):
         # No active user found, raise a validation error
         # but not if DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE == True
         if not active_user_found and not getattr(settings, 'DJANGO_REST_PASSWORDRESET_NO_INFORMATION_LEAKAGE', False):
-            raise CustomException('does_not_exists')
+            raise CustomException('does_not_exists', label='user')
 
         # last but not least: iterate over all users that are active and can change their password
         # and create a Reset Password Token and send a signal with the created token
