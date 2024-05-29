@@ -50,7 +50,7 @@ class PostDetailView(GenericAPIView):
     def get(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', label='post')
+            raise CustomException('does_not_exists', label='post')
 
         res = PostSerializer(instance=post).data
         return Response(res)
@@ -58,7 +58,7 @@ class PostDetailView(GenericAPIView):
     def put(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', label='post')
+            raise CustomException('does_not_exists', label='post')
 
         if post.author != request.user:
             raise CustomException('permission_denied', 'Not your posts')
@@ -89,7 +89,7 @@ class PostDetailView(GenericAPIView):
     def delete(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', label='post')
+            raise CustomException('does_not_exists', label='post')
 
         if post.author != request.user:
             raise CustomException('permission_denied', 'Not your posts')
@@ -104,14 +104,14 @@ class PostImageView(GenericAPIView):
     def get(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', label='post')
+            raise CustomException('does_not_exists', label='post')
 
         return post.get_content_image()
 
     def put(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
         if post is None:
-            raise CustomException('model_not_found', label='post')
+            raise CustomException('does_not_exists', label='post')
 
         if post.author != request.user:
             raise CustomException('permission_denied', 'Not your posts')
@@ -181,18 +181,18 @@ class FollowUserView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
-        user = User.objects.filter(id=user_id).first()
-        if not user:
+        following_user = User.objects.filter(id=user_id).first()
+        if not following_user:
             raise CustomException("does_not_exists", label='user')
         follower = request.user
-        if follower == user:
+        if follower == following_user:
             raise CustomException("follow_conflict", message="Cant follow yourself")
-        follower_count_obj = FollowersCount.objects.filter(follower=follower, user=user).first()
+        follower_count_obj = FollowersCount.objects.filter(follower=follower, following=following_user).first()
         if follower_count_obj:
             follower_count_obj.delete()
             action = 'unfollow'
         else:
-            new_follower = FollowersCount.objects.create(follower=follower, user=user)
+            new_follower = FollowersCount.objects.create(follower=follower, user=following_user)
             new_follower.save()
             action = 'follow'
 
@@ -209,9 +209,6 @@ class MakeCommentPost(GenericAPIView):
         if not Post:
             raise CustomException('does_not_exists', label='post')
 
-        if not post.question:
-            raise CustomException('does_not_exists', label='question')
-
         data = json.loads(request.body)
 
         cmt = Comment(author=user, post=post, body=data.get('text', ''))
@@ -222,7 +219,7 @@ class MakeCommentPost(GenericAPIView):
         return Response(serializer.data)
 
 
-class CommentPost(GenericAPIView):
+class CommentPostView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request, post_id, comment_id):
@@ -230,9 +227,6 @@ class CommentPost(GenericAPIView):
         post = Post.objects.filter(id=post_id).first()
         if not Post:
             raise CustomException('does_not_exists', label='post')
-
-        if not post.question:
-            raise CustomException('does_not_exists', label='question')
 
         comment = post.comments.filter(id=comment_id, author=user).first()
         if not comment:
@@ -250,9 +244,6 @@ class CommentPost(GenericAPIView):
         post = Post.objects.filter(id=post_id).first()
         if not Post:
             raise CustomException('does_not_exists', label='post')
-
-        if not post.question:
-            raise CustomException('does_not_exists', label='question')
 
         comment = post.comments.filter(id=comment_id, author=user).first()
         if not comment:

@@ -167,7 +167,7 @@ class QuestionDataView(GenericAPIView):
 
         question_data = question.question_data_set.filter(id=question_data_id).first()
         if not question_data:
-            raise CustomException('model_not_found', 'No question data found')
+            raise CustomException('does_not_exists', label='question_data')
 
         data_serializer = QuestionDataSerializer(instance=question_data, data=data, partial=True)
         data_serializer.is_valid(raise_exception=True)

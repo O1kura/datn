@@ -1,6 +1,8 @@
 import mimetypes
+import os
 
 from django.db import models
+from django.dispatch import receiver
 from django.http import HttpResponse
 
 from api.models import User
@@ -10,7 +12,7 @@ from api.models.tag import Tag
 
 class FollowersCount(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower_set')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='followed_set')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following_set')
 
 
 class Post(models.Model):
@@ -34,6 +36,13 @@ class Post(models.Model):
                 image_file = f.read()
         img_mimetypes = mimetypes.guess_type(image_path)[0]
         return HttpResponse(image_file, content_type=img_mimetypes)
+
+
+@receiver(models.signals.pre_delete, sender=Post)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    path = instance.img_path
+    if path and os.path.isfile(path) and not instance.question:
+        os.remove(path)
 
 
 class Comment(models.Model):

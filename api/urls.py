@@ -60,6 +60,8 @@ urlpatterns = [
     path('posts/<int:post_id>/image', post_views.PostImageView.as_view()),
     path('posts/<int:post_id>/like', post_views.LikePostView.as_view()),
     path('posts/<int:post_id>/rate_question', post_views.RateQuestionFromPostView.as_view()),
+    path('posts/<int:post_id>/comments', post_views.MakeCommentPost.as_view()),
+    path('posts/<int:post_id>/comments/<int:comment_id>', post_views.CommentPostView.as_view()),
 
     path('users/<int:user_id>/follow', post_views.FollowUserView.as_view()),
 ]

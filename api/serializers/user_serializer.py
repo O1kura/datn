@@ -18,8 +18,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        rep['follower_count'] = len(instance.follower_set.all())
-        rep['followed_count'] = len(instance.followed_set.all())
+        rep['follower_count'] = len(instance.following_set.all())
+        rep['following_count'] = len(instance.follower_set.all())
+
+        return rep
 
 
 class AdminUserSerializer(serializers.ModelSerializer):

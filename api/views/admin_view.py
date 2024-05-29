@@ -3,9 +3,11 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
 from api.models import User
+from api.models.post import Post, Comment
 from api.models.submission import File, Data, Question, QuestionData
 from api.serializers.data_serializer import DataSerializer, QuestionDataSerializer
 from api.serializers.file_serializer import FileSerializer, QuestionSerializer, FileDetailSerializer
+from api.serializers.post_serializers import PostSerializer, CommentSerializer
 from api.serializers.user_serializer import UserSerializer, AdminUserSerializer
 
 
@@ -52,3 +54,22 @@ class AdminQuestionDataView(viewsets.ModelViewSet):
     queryset = QuestionData.objects.all()
     serializer_class = QuestionDataSerializer
     permission_classes = [permissions.IsAdminUser]
+
+
+class AdminCommentView(viewsets.ModelViewSet):
+    """
+       A simple ViewSet for viewing and editing accounts.
+       """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+
+class AdminPostView(viewsets.ModelViewSet):
+    """
+       A simple ViewSet for viewing and editing accounts.
+       """
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAdminUser]
+
