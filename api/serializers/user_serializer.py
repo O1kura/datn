@@ -16,6 +16,11 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('email', 'username', 'is_superuser', 'date_joined', 'last_login', 'is_staff', 'is_active',
                             'groups', 'deleted_at')
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['follower_count'] = len(instance.follower_set.all())
+        rep['followed_count'] = len(instance.followed_set.all())
+
 
 class AdminUserSerializer(serializers.ModelSerializer):
     email = EmailSerializer

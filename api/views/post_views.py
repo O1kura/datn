@@ -8,8 +8,10 @@ from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
 from api.models import User
-from api.models.post import Post, LikePost, FollowersCount
-from api.serializers.post_serializers import PostSerializer
+from api.models.post import Post, LikePost, FollowersCount, Comment
+from api.models.rating import Rating
+from api.serializers.post_serializers import PostSerializer, CommentSerializer
+from api.serializers.rating_serializers import RatingSerializer
 from api.utils.utils import try_parse_datetime, update_tags, save_file
 
 
@@ -133,7 +135,7 @@ class LikePostView(GenericAPIView):
 
         post = Post.objects.filter(id=post_id).first()
         if not Post:
-            raise CustomException('does_not_found', label='post')
+            raise CustomException('does_not_exists', label='post')
 
         like_filter = LikePost.objects.filter(post_id=post_id, user_id=user.id).first()
 
@@ -151,11 +153,37 @@ class LikePostView(GenericAPIView):
         return Response(data)
 
 
+class RateQuestionFromPostView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        user = request.user
+
+        post = Post.objects.filter(id=post_id).first()
+        if not Post:
+            raise CustomException('does_not_exists', label='post')
+
+        if not post.question:
+            raise CustomException('does_not_exists', label='question')
+
+        data = json.loads(request.body)
+
+        rating, created = Rating.objects.get_or_create(user=user, question=post.question)
+
+        serializer = RatingSerializer(instance=rating, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data)
+
+
 class FollowUserView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, user_id):
         user = User.objects.filter(id=user_id).first()
         if not user:
-            raise CustomException("does_not_found", label='user')
+            raise CustomException("does_not_exists", label='user')
         follower = request.user
         if follower == user:
             raise CustomException("follow_conflict", message="Cant follow yourself")
@@ -169,3 +197,67 @@ class FollowUserView(GenericAPIView):
             action = 'follow'
 
         return Response({'action': action})
+
+
+class MakeCommentPost(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, post_id):
+        user = request.user
+
+        post = Post.objects.filter(id=post_id).first()
+        if not Post:
+            raise CustomException('does_not_exists', label='post')
+
+        if not post.question:
+            raise CustomException('does_not_exists', label='question')
+
+        data = json.loads(request.body)
+
+        cmt = Comment(author=user, post=post, body=data.get('text', ''))
+        cmt.save()
+
+        serializer = PostSerializer(instance=post)
+
+        return Response(serializer.data)
+
+
+class CommentPost(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, post_id, comment_id):
+        user = request.user
+        post = Post.objects.filter(id=post_id).first()
+        if not Post:
+            raise CustomException('does_not_exists', label='post')
+
+        if not post.question:
+            raise CustomException('does_not_exists', label='question')
+
+        comment = post.comments.filter(id=comment_id, author=user).first()
+        if not comment:
+            raise CustomException('does_not_exists', label='comment')
+
+        data = json.loads(request.body)
+
+        comment.body = data.get('text', '')
+        comment.save()
+
+        return Response(CommentSerializer(instance=comment).data)
+
+    def delete(self, request, post_id, comment_id):
+        user = request.user
+        post = Post.objects.filter(id=post_id).first()
+        if not Post:
+            raise CustomException('does_not_exists', label='post')
+
+        if not post.question:
+            raise CustomException('does_not_exists', label='question')
+
+        comment = post.comments.filter(id=comment_id, author=user).first()
+        if not comment:
+            raise CustomException('does_not_exists', label='comment')
+
+        comment.delete()
+
+        return Response({'status': 'ok'})

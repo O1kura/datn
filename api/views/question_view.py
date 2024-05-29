@@ -242,8 +242,8 @@ class QUestionRatingView(GenericAPIView):
         if question is None:
             raise CustomException('does_not_exists', label='question')
 
-        # if question.user != request.user:
-            # raise CustomException('permission_denied', 'Not your questions')
+        if question.user != request.user:
+            raise CustomException('permission_denied', 'Not your questions')
 
         data = json.loads(request.body)
 
