@@ -199,24 +199,47 @@ def text_line_extraction_2(image, get_image=False):
             if block_num in dict_res:
                 avg_text_width = (dict_res[block_num]['rect_x'] - dict_res[block_num]['x']) / len(
                     dict_res[block_num]['text'])
-                avg_text_height = (dict_res[block_num]['rect_y'] - dict_res[block_num]['y']) / dict_res[block_num]['line']
+                avg_text_height = (dict_res[block_num]['rect_y'] - dict_res[block_num]['y']) / dict_res[block_num][
+                    'line']
 
-                if (x - dict_res[block_num]["rect_x"] > 1.6 * avg_text_width
-                    # or abs(x - dict_res[block_num]["x"]) > 3 * avg_text_width
-                        or y + h - dict_res[block_num]["rect_y"] > 1.6 * avg_text_height):
-                    true_text.append(dict_res[block_num])
-                    dict_res[block_num] = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h, "component": [i], "line": line}
-                    continue
+                if line == dict_res[block_num]['line']:
+                    # If the beginning of the next word is close to the last word, append to the last word
+                    if (x - dict_res[block_num]["rect_x"] > 1.6 * avg_text_width
+                            or y + h - dict_res[block_num]["rect_y"] > 1.6 * avg_text_height):
+                        true_text.append(dict_res[block_num])
+                        dict_res[block_num] = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h,
+                                               "component": [i], "line": line}
+                        continue
 
-                dict_res[block_num]['text'] = dict_res[block_num]['text'] + ' ' + text
-                dict_res[block_num]["x"] = min(dict_res[block_num]["x"], x)
-                dict_res[block_num]["y"] = min(dict_res[block_num]["y"], y)
-                dict_res[block_num]["rect_x"] = max(dict_res[block_num]["rect_x"], x + w)
-                dict_res[block_num]["rect_y"] = max(dict_res[block_num]["rect_y"], y + h)
-                dict_res[block_num]["component"].append(i)
-                dict_res[block_num]["line"] = line
+                    dict_res[block_num]['text'] = dict_res[block_num]['text'] + ' ' + text
+                    dict_res[block_num]["x"] = min(dict_res[block_num]["x"], x)
+                    dict_res[block_num]["y"] = min(dict_res[block_num]["y"], y)
+                    dict_res[block_num]["rect_x"] = max(dict_res[block_num]["rect_x"], x + w)
+                    dict_res[block_num]["rect_y"] = max(dict_res[block_num]["rect_y"], y + h)
+                    dict_res[block_num]["component"].append(i)
+                    dict_res[block_num]["line"] = line
+                else:
+                    # If the centers not match
+                    if ((abs((2 * x + w) / 2 - (
+                            dict_res[block_num]["rect_x"] + dict_res[block_num]['x']) / 2) > 1.6 * avg_text_width
+                         # Or the beginning of the new line does not match the beginning of the current block:
+                         and abs(x - dict_res[block_num]["x"]) > 1.6 * avg_text_width)
+                            or y + h - dict_res[block_num]["rect_y"] > 1.6 * avg_text_height):
+                        true_text.append(dict_res[block_num])
+                        dict_res[block_num] = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h,
+                                               "component": [i], "line": line}
+                        continue
+
+                    dict_res[block_num]['text'] = dict_res[block_num]['text'] + ' ' + text
+                    dict_res[block_num]["x"] = min(dict_res[block_num]["x"], x)
+                    dict_res[block_num]["y"] = min(dict_res[block_num]["y"], y)
+                    dict_res[block_num]["rect_x"] = max(dict_res[block_num]["rect_x"], x + w)
+                    dict_res[block_num]["rect_y"] = max(dict_res[block_num]["rect_y"], y + h)
+                    dict_res[block_num]["component"].append(i)
+                    dict_res[block_num]["line"] = line
             else:
-                dict_res[block_num] = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h, "component": [i], "line": line}
+                dict_res[block_num] = {'text': text, "x": x, "y": y, "rect_x": x + w, "rect_y": y + h, "component": [i],
+                                       "line": line}
     true_text.extend(dict_res.values())
     result = []
 
@@ -261,7 +284,8 @@ def text_line_extraction_2(image, get_image=False):
 
             # Viết chữ vào chính giữa hình chữ nhật
             if get_image:
-                cv2.putText(image, dict["symbol"], (dict["text_x"], dict["text_y"]), dict['symbol_text']["text_font"], dict['scale'], dict['symbol_text']["color"], dict['thickness'])
+                cv2.putText(image, dict["symbol"], (dict["text_x"], dict["text_y"]), dict['symbol_text']["text_font"],
+                            dict['scale'], dict['symbol_text']["color"], dict['thickness'])
 
     if get_image:
         return result, image
@@ -275,7 +299,7 @@ def format_box_text_to_dict(block_text, padding):
     w = block_text['rect_x'] - x + padding
     h = block_text['rect_y'] - y + padding
 
-    text = "R"
+    text = block_text['text']
     text_font = cv2.FONT_HERSHEY_SIMPLEX
 
     text_width, text_height = cv2.getTextSize(text, text_font, 1, 2)[0]
