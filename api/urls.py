@@ -34,22 +34,22 @@ urlpatterns = [
     path('submissions', submission_views.ListSubmissionView.as_view()),
 
     # File and file data
-    path('file', submission_views.ListFilesView.as_view()),
-    path('file/<int:file_id>', submission_views.FileDetailView.as_view()),
-    path('file/<int:file_id>/image', submission_views.FileImageView.as_view()),
-    path('file/<int:file_id>/generate', submission_views.GenerateQuestionView.as_view()),
-    path('file/<int:file_id>/<int:data_id>', submission_views.DataDetailView.as_view()),
-    path('file/<int:file_id>/<int:data_id>/restore', submission_views.RestoreDataDetailView.as_view()),
+    path('files', submission_views.ListFilesView.as_view()),
+    path('files/<int:file_id>', submission_views.FileDetailView.as_view()),
+    path('files/<int:file_id>/image', submission_views.FileImageView.as_view()),
+    path('files/<int:file_id>/generate', submission_views.GenerateQuestionView.as_view()),
+    path('files/<int:file_id>/<int:data_id>', submission_views.DataDetailView.as_view()),
+    path('files/<int:file_id>/<int:data_id>/restore', submission_views.RestoreDataDetailView.as_view()),
 
     # Question and question data
-    path('question', question_view.QuestionView.as_view()),
-    path('question/<int:question_id>', question_view.QuestionDetailView.as_view()),
-    path('question/<int:question_id>/image', question_view.QuestionImageView.as_view()),
+    path('questions', question_view.QuestionView.as_view()),
+    path('questions/<int:question_id>', question_view.QuestionDetailView.as_view()),
+    path('questions/<int:question_id>/image', question_view.QuestionImageView.as_view()),
     path('question_image/<int:question_id>', question_view.QuestionWithImageDetailView.as_view()),
-    path('question/<int:question_id>/<int:question_data_id>', question_view.QuestionDataView.as_view()),
-    path('question/<int:question_id>/add', question_view.AddQuestionDataView.as_view()),
-    path('question/<int:question_id>/rating', question_view.QUestionRatingView.as_view()),
-    path('question/<int:question_id>/share', question_view.QuestionShareView.as_view()),
+    path('questions/<int:question_id>/<int:question_data_id>', question_view.QuestionDataView.as_view()),
+    path('questions/<int:question_id>/add', question_view.AddQuestionDataView.as_view()),
+    path('questions/<int:question_id>/rating', question_view.QUestionRatingView.as_view()),
+    path('questions/<int:question_id>/share', question_view.QuestionShareView.as_view()),
 
     # Dashboard
     path('dashboard/submission_by_month', dashboard_views.SubmissionByMonthView.as_view()),

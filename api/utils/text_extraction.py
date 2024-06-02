@@ -299,7 +299,7 @@ def format_box_text_to_dict(block_text, padding):
     w = block_text['rect_x'] - x + padding
     h = block_text['rect_y'] - y + padding
 
-    text = block_text['text']
+    text = 'R'
     text_font = cv2.FONT_HERSHEY_SIMPLEX
 
     text_width, text_height = cv2.getTextSize(text, text_font, 1, 2)[0]

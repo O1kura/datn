@@ -73,7 +73,7 @@ class GenerateQuestionView(GenericAPIView):
 
         # Get the unique when format value
         for idx, item in enumerate(random_data):
-            if item.normalized_value not in list_value:
+            if replace_vietnamese(item.normalized_value) not in list_value:
                 list_value.append(replace_vietnamese(item.normalized_value))
             else:
                 duplicate_idx.append(idx)
