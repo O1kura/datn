@@ -1,4 +1,5 @@
 import pathlib
+import random
 from datetime import datetime
 import os
 import uuid
@@ -52,7 +53,12 @@ def save_file(dir_path, file):
 
 
 def generate_question(symbol):
-    return str(symbol) + ' là gì?'
+    list_question = [
+        f'What is {str(symbol)}?',
+        f'What to fill in {str(symbol)}?',
+        f'The value of {str(symbol)}:'
+    ]
+    return list_question.pop(random.randint(0, len(list_question)-1))
 
 
 def update_tags(tags):

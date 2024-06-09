@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import json
 import os
 import random
@@ -66,7 +67,8 @@ class GenerateQuestionView(GenericAPIView):
 
         # Get random 4 data from its data_set
         data = file.data_set.filter(deleted_at__isnull=True).all()
-        random_data = random.sample(list(data), 4)
+        number_of_answer = min(4, len(data))
+        random_data = random.sample(list(data), number_of_answer)
 
         list_value = []
         duplicate_idx = []
@@ -88,37 +90,91 @@ class GenerateQuestionView(GenericAPIView):
             random_data[data_index] = unique_data_set[random_index]
             list_value.append(random_data[data_index].normalized_value)
 
-        ran = random.randint(0, 3)
-        ans = random_data[ran]
-        question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question)
-        question_a.save()
+        if number_of_answer < 2:
+            raise CustomException('no_data', message='No data read')
 
+        # 0 for fill in the blank question
+        # 1 for arranging the order
+        type_question = random.randint(0, 1)
+        # type_question = 1
         uppercase_letters = list(string.ascii_uppercase)
-        for data in random_data:
-            symbol = uppercase_letters.pop(0)
-            symbol_box = data.symbol_box
-            box = data.box
 
-            cv2.rectangle(img, (box['x'], box['y']),
-                          (box['rect_x'], box['rect_y']),
-                          box['filled_color'], -1)
-            cv2.rectangle(img, (box['x'], box['y']),
-                          (box['rect_x'], box['rect_y']),
-                          box['border_color'], box['border_thickness'])
+        if type_question == 0:
+            ran = random.randint(0, number_of_answer - 1)
+            ans = random_data[ran]
+            question_a = QuestionData(value=ans.normalized_value, category=Category.dap_an.value, question=question)
+            question_a.save()
 
-            cv2.putText(img, symbol, (symbol_box['text_x'], symbol_box['text_y']),
-                        symbol_box['text_font'], symbol_box['text_scale'], symbol_box['color'],
-                        symbol_box['text_thickness'])
+            for data in random_data:
+                symbol = uppercase_letters.pop(0)
+                symbol_box = data.symbol_box
+                box = data.box
 
-            if data == ans:
-                q = generate_question(symbol)
-                question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question)
-                question_q.save()
-            else:
-                question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value,
-                                          question=question)
+                cv2.rectangle(img, (box['x'], box['y']),
+                              (box['rect_x'], box['rect_y']),
+                              box['filled_color'], -1)
+                cv2.rectangle(img, (box['x'], box['y']),
+                              (box['rect_x'], box['rect_y']),
+                              box['border_color'], box['border_thickness'])
+
+                cv2.putText(img, symbol, (symbol_box['text_x'], symbol_box['text_y']),
+                            symbol_box['text_font'], symbol_box['text_scale'], symbol_box['color'],
+                            symbol_box['text_thickness'])
+
+                if data == ans:
+                    q = generate_question(symbol)
+                    question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question)
+                    question_q.save()
+                else:
+                    question_c = QuestionData(value=data.normalized_value, category=Category.cau_tra_loi.value,
+                                              question=question)
+                    question_c.save()
+
+        elif type_question == 1:
+            # Generate all permutations
+            all_permutations = list(itertools.permutations(random_data))
+            list_answer = random.sample(all_permutations, number_of_answer)
+            ran = random.randint(0, number_of_answer - 1)
+            ans = list_answer.pop(ran)
+            answer_value = ''
+            uppercase_letters_copy = uppercase_letters.copy()
+
+            q = 'What is the correct arrangement for these?'
+            question_q = QuestionData(value=q, category=Category.cau_hoi.value, question=question)
+            question_q.save()
+
+            for data in ans:
+                symbol = uppercase_letters_copy.pop(0)
+                symbol_box = data.symbol_box
+                box = data.box
+
+                cv2.rectangle(img, (box['x'], box['y']),
+                              (box['rect_x'], box['rect_y']),
+                              box['filled_color'], -1)
+                cv2.rectangle(img, (box['x'], box['y']),
+                              (box['rect_x'], box['rect_y']),
+                              box['border_color'], box['border_thickness'])
+
+                cv2.putText(img, symbol, (symbol_box['text_x'], symbol_box['text_y']),
+                            symbol_box['text_font'], symbol_box['text_scale'], symbol_box['color'],
+                            symbol_box['text_thickness'])
+                answer_value = answer_value + f'{symbol}: {data.normalized_value}; '
+            answer_value = answer_value[:-2]
+
+            question_a = QuestionData(value=answer_value, category=Category.dap_an.value, question=question)
+            question_a.save()
+
+            for answer in list_answer:
+                false_ans_value = ''
+                uppercase_letters_copy = uppercase_letters.copy()
+                for data in answer:
+                    symbol = uppercase_letters_copy.pop(0)
+                    false_ans_value = false_ans_value + f'{symbol}: {data.normalized_value}; '
+
+                false_ans_value = false_ans_value[:-2]
+
+                question_c = QuestionData(value=false_ans_value, category=Category.cau_tra_loi.value, question=question)
                 question_c.save()
-
         img = convertOpenCVImagetoPIL(img)
         watermark_img = Image.open(watermark_img_path)
         img = add_watermark(img, watermark_img)
