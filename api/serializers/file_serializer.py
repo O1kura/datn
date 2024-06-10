@@ -7,6 +7,7 @@ from rest_framework.serializers import BaseSerializer
 
 from api.models.submission import Submission, Question, File, Category
 from api.serializers.data_serializer import QuestionDataSerializer, DataSerializer
+from api.serializers.rating_serializers import RatingSerializer
 
 
 class ListSubmissionSerializer(serializers.ModelSerializer):
@@ -49,9 +50,9 @@ class QuestionSerializer(serializers.ModelSerializer):
 
         rep['tags'] = [str(tag) for tag in instance.tags.all()]
 
-        ratings = instance.rating_set.aggregate(avg_rating=Avg('rating'))
-        rep['rating'] = ratings['avg_rating']
-
+        ratings = instance.rating_set.filter(rating__isnull=False).aggregate(avg_rating=Avg('rating'))
+        rep['avg_rating'] = ratings['avg_rating']
+        rep['rating'] = RatingSerializer(instance=instance.rating_set.all(), many=True).data
         return rep
 
 

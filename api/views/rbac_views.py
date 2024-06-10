@@ -24,6 +24,7 @@ from datn import settings
 
 class LoginView(GenericAPIView):
     authentication_classes = ()
+    throttle_scope = 'login'
 
     def post(self, request):
         username = request.POST.get('username', None)
