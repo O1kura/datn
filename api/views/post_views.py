@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
 from api.models import User
+from api.models.notification import Notification, NotificationType
 from api.models.post import Post, LikePost, FollowersCount, Comment
 from api.models.rating import Rating
 from api.serializers.post_serializers import PostSerializer, CommentSerializer
@@ -16,7 +17,6 @@ from api.utils.utils import try_parse_datetime, update_tags, save_file
 
 
 class ListPostView(ListAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = PostSerializer
 
     def get_queryset(self):
@@ -45,7 +45,7 @@ class ListPostView(ListAPIView):
 
 
 class PostDetailView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
@@ -99,7 +99,7 @@ class PostDetailView(GenericAPIView):
 
 
 class PostImageView(GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get(self, request, post_id):
         post = Post.objects.filter(id=post_id).first()
@@ -190,12 +190,22 @@ class FollowUserView(GenericAPIView):
         follower_count_obj = FollowersCount.objects.filter(follower=follower, following=following_user).first()
         if follower_count_obj:
             follower_count_obj.delete()
+            notification = Notification.objects.filter(recepient=following_user, actor=request.user,
+                                        type=NotificationType.get_followed.value).first()
+            if notification:
+                notification.delete()
+
             action = 'unfollow'
         else:
             new_follower = FollowersCount.objects.create(follower=follower, user=following_user)
             new_follower.save()
             action = 'follow'
-
+            # for follower in question.user.follower.filter(is_active=True):
+            message = f'{request.user.username} starts following you'
+            notification = Notification(recepient=following_user, actor=request.user,
+                                        type=NotificationType.get_followed.value,
+                                        message=message)
+            notification.save()
         return Response({'action': action})
 
 
@@ -213,6 +223,12 @@ class MakeCommentPost(GenericAPIView):
 
         cmt = Comment(author=user, post=post, body=data.get('text', ''))
         cmt.save()
+
+        message = f'{user.username} makes a comment on post {post.title}'
+        notification = Notification(recepient=post.author, actor=user,
+                                    type=NotificationType.new_comment.value,
+                                    message=message, post=post)
+        notification.save()
 
         serializer = PostSerializer(instance=post)
 

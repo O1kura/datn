@@ -2,12 +2,14 @@ import json
 import os
 
 from django.contrib.auth import update_session_auth_hash
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework import permissions
 
 from api.middlewares.custome_middleware import CustomException
 from api.models import User
-from api.serializers.user_serializer import UserSerializer
+from api.models.post import Post
+from api.serializers.post_serializers import PostSerializer
+from api.serializers.user_serializer import UserSerializer, ViewOnlyUserSerializer
 from rest_framework.response import Response
 
 from api.utils.utils import save_profile_image, str_to_bool
@@ -84,7 +86,6 @@ class UserProfileImageView(GenericAPIView):
 
 
 class GetUserProfileImageView(GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, user_id):
         user = User.objects.filter(id=user_id).first()
@@ -94,3 +95,26 @@ class GetUserProfileImageView(GenericAPIView):
             return Response({'image': None})
 
         return user.get_thumb_photo()
+
+
+class UserPostsView(ListAPIView):
+
+    serializer_class = PostSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        user = User.objects.filter(id=user_id).first()
+        if user is None:
+            raise CustomException('does_not_exists', label='user')
+        return user.post_set.all()
+
+
+class UserView(GenericAPIView):
+    def get(self, request, user_id):
+        user = User.objects.filter(id=user_id).first()
+        if user is None:
+            raise CustomException('does_not_exists', label='user')
+
+        data = ViewOnlyUserSerializer(instance=user).data
+
+        return Response(data)

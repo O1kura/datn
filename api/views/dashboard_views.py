@@ -6,6 +6,7 @@ from rest_framework import permissions
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
+from api.models import User
 from api.models.submission import Submission, File
 from api.utils.dashboard_utils import get_query_params
 import pytz
@@ -44,3 +45,12 @@ class SubmissionByMonthView(GenericAPIView):
             result[i["month"].month]['total_file'] = i["total"]
 
         return Response(result)
+
+
+class UsersCountView(GenericAPIView):
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request):
+        res = User.objects.all().values('is_superuser').annotate(total=Count('id'))
+
+        return Response(res)

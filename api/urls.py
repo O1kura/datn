@@ -15,6 +15,8 @@ router.register(r'files', admin_view.AdminFileView, basename='file')
 router.register(r'datas', admin_view.AdminDataView, basename='data')
 router.register(r'questions', admin_view.AdminQuestionView, basename='question')
 router.register(r'question_datas', admin_view.AdminQuestionDataView, basename='question_data')
+router.register(r'posts', admin_view.AdminPostView, basename='posts')
+router.register(r'comments', admin_view.AdminCommentView, basename='comments')
 
 urlpatterns = [
     path('manage/', include(router.urls)),
@@ -24,7 +26,9 @@ urlpatterns = [
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('me', user_views.CurrentUserView.as_view()),
     path('me/profile-img', user_views.UserProfileImageView.as_view()),
-    path('users/<uuid:user_id>/profile-img', user_views.GetUserProfileImageView.as_view()),
+    path('users/<int:user_id>', user_views.UserView.as_view()),
+    path('users/<int:user_id>/profile-img', user_views.GetUserProfileImageView.as_view()),
+    path('users/<int:user_id>/blogs', user_views.UserPostsView.as_view()),
     path('me/change_password', user_views.ChangePassword.as_view()),
     path('password-reset', rbac_views.ResetPasswordRequestToken.as_view()),
     path('password-reset-confirm', rbac_views.ResetPasswordConfirm.as_view()),
@@ -53,6 +57,7 @@ urlpatterns = [
 
     # Dashboard
     path('dashboard/submission_by_month', dashboard_views.SubmissionByMonthView.as_view()),
+    path('dashboard/users_count', dashboard_views.UsersCountView.as_view()),
 
     # Post, comment
     path('posts', post_views.ListPostView.as_view()),

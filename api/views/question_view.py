@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.middlewares.custome_middleware import CustomException
+from api.models.notification import Notification, NotificationType
 from api.models.post import Post
 from api.models.rating import Rating
 from api.models.submission import Question, Category, QuestionData
@@ -264,8 +265,8 @@ class QuestionShareView(GenericAPIView):
         if question is None:
             raise CustomException('does_not_exists', label='question')
 
-        # if question.user != request.user:
-            # raise CustomException('permission_denied', 'Not your questions')
+        if question.user != request.user:
+            raise CustomException('permission_denied', 'Not your questions')
 
         data = json.loads(request.body)
         caption = data.get('caption', '')
@@ -274,6 +275,12 @@ class QuestionShareView(GenericAPIView):
         post.save()
         post.tags.set(question.tags.all())
         post.save()
+
+        message = f'{question.user.username} has a new post!'
+        for follower in question.user.follower.filter(is_active=True):
+            notification = Notification(recepient=follower, actor=question.user, type=NotificationType.new_post.value,
+                                        message=message, post=post)
+            notification.save()
 
         serializer = PostSerializer(instance=post)
 

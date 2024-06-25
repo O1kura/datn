@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from api.models import User
 from api.serializers.file_serializer import ListSubmissionSerializer
+from api.serializers.notification_serializer import NotificationSerializer
 
 
 class EmailSerializer(serializers.Serializer):
@@ -15,6 +16,21 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ['password', 'thumb_profile_path', 'profile_path']
         read_only_fields = ('email', 'username', 'is_superuser', 'date_joined', 'last_login', 'is_staff', 'is_active',
                             'groups', 'deleted_at')
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['follower_count'] = len(instance.following_set.all())
+        rep['following_count'] = len(instance.follower_set.all())
+
+        rep['notifications'] = NotificationSerializer(instance=instance.notifications.filter(is_read=False).order_by('-created_at'), many=True).data
+        return rep
+
+
+class ViewOnlyUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ['password', 'thumb_profile_path', 'profile_path', 'created_at', 'date_joined', 'groups']
+        read_only_fields = ('email', 'username', 'is_superuser', 'last_login', 'is_staff', 'is_active', 'deleted_at')
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
