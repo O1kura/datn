@@ -157,8 +157,8 @@ def text_line_extraction_2(image, get_image=False):
     # bw = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
     # Extract only using pytesseract
-    print(pytesseract.image_to_data(gray))
-    results = pytesseract.image_to_data(gray, output_type='dict')
+    # print(pytesseract.image_to_data(gray))
+    results = pytesseract.image_to_data(gray, output_type='dict', config='-l eng+vie')
 
     # block_words_count = {}
     true_text = []

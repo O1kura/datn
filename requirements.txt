@@ -14,7 +14,7 @@ packaging==24.0
 pillow==10.3.0
 PyJWT==2.8.0
 pytesseract==0.3.10
-pytz @ file:///C:/b/abs_6ap4tsz1ox/croot/pytz_1713974360290/work
+pytz 
 sqlparse==0.4.4
 typing_extensions==4.10.0
 tzdata==2024.1
