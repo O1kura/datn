@@ -1,5 +1,6 @@
 import base64
 import json
+import mimetypes
 import os
 import uuid
 from io import BytesIO
@@ -21,6 +22,7 @@ class UnauthorizedUploadView(GenericAPIView):
     def post(self, request):
         image = request.FILES.get('image', None)
         if image:
+            name = image.name
             image = Image.open(image)
 
             open_cv_image = convertPILtoOpenCVImage(image)
@@ -33,7 +35,9 @@ class UnauthorizedUploadView(GenericAPIView):
             watermark_img = Image.open(watermark_img_path)
             img = add_watermark(img, watermark_img)
             image = get_file_content(img)
-            return HttpResponse(image, content_type='image/jpeg')
+
+            mime_type, encoding=mimetypes.guess_type(name)
+            return HttpResponse(image, content_type=mime_type)
 
         raise CustomException('image_not_found')
 # class

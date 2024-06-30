@@ -1,4 +1,5 @@
 import json
+import mimetypes
 
 from django.db.models import Count, F
 from django.http import HttpResponse
@@ -278,7 +279,7 @@ class QuestionShareView(GenericAPIView):
 
         message = f'{question.user.username} has a new post!'
         for follower in question.user.follower.filter(is_active=True):
-            notification = Notification(recepient=follower, actor=question.user, type=NotificationType.new_post.value,
+            notification = Notification(recipient=follower, actor=question.user, type=NotificationType.new_post.value,
                                         message=message, post=post)
             notification.save()
 
