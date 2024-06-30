@@ -9,7 +9,7 @@ This project is designed to generate multiple-choice questions (MCQs) from image
   - [Step 1: Install Virtual Environment](#step-1-install-virtual-environment)
   - [Step 2: Install Dependencies](#step-2-install-dependencies)
   - [Step 3: Create Configuration File](#step-3-create-configuration-file)
-  - [Step 4: Install Tesseract](#step-4-install-esseract)
+  - [Step 4: Install Tesseract](#step-4-install-tesseract)
 - [Running the Project](#running-the-project)
 - [License](#license)
 
