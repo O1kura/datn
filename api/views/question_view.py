@@ -278,8 +278,8 @@ class QuestionShareView(GenericAPIView):
         post.save()
 
         message = f'{question.user.username} has a new post!'
-        for follower in question.user.follower.filter(is_active=True):
-            notification = Notification(recipient=follower, actor=question.user, type=NotificationType.new_post.value,
+        for follower_count in question.user.following_set.filter(follower__is_active=True):
+            notification = Notification(recipient=follower_count.follower, actor=question.user, type=NotificationType.new_post.value,
                                         message=message, post=post)
             notification.save()
 

@@ -6,7 +6,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from api.views import rbac_views, user_views, upload_view, submission_views, question_view, admin_view,\
-    dashboard_views, post_views
+    dashboard_views, post_views, notification_views
 
 
 router = DefaultRouter()
@@ -69,4 +69,5 @@ urlpatterns = [
     path('posts/<int:post_id>/comments/<int:comment_id>', post_views.CommentPostView.as_view()),
 
     path('users/<int:user_id>/follow', post_views.FollowUserView.as_view()),
+    path('notifications/<int:notification_id>/read', notification_views.ReadNotificationsView.as_view())
 ]
